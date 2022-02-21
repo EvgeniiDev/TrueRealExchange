@@ -23,9 +23,9 @@ namespace TrueRealExchange
                 acc.DataReceiver(prices);
         }
 
-        public Account CreateAccount(string name, decimal startBalance)
+        public Account CreateAccount(string name,string defaultCurrency, decimal startBalance)
         {
-            var account = new Account(name, startBalance);
+            var account = new Account(name, defaultCurrency, startBalance);
             accounts.Add(account);
             return account;
         }
