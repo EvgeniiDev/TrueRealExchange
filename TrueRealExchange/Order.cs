@@ -11,8 +11,8 @@ namespace TrueRealExchange
         public decimal Amount;
         public decimal Price;
         public Account Owner;
-        //public bool BuyIfTrueOrSellIfFalse;
-        public void Execute(decimal price)
+        private List<Deal> deals = new List<Deal>();
+        public void Update(decimal price)
         {
             throw new NotImplementedException();
         }
@@ -24,16 +24,5 @@ namespace TrueRealExchange
             Price = price;
             Owner = owner;
         }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     }
-
 }

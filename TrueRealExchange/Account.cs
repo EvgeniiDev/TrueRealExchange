@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TrueRealExchange
 {
@@ -10,11 +7,12 @@ namespace TrueRealExchange
     {
         public string Name;
         private decimal BTCAmount;
+        private string defaultCurrency;
         private decimal usdAmount;
         private List<decimal> balanceHistory = new List<decimal>();
-        private List<Order> orders = new List<Order>();
+        private Dictionary<Guid, Order> orders = new Dictionary<Guid, Order>();
 
-        public Account(string name, decimal startBalance)
+        public Account(string name, string defaultCurrency, decimal startBalance)
         {
             Name = name;
             usdAmount = startBalance;
@@ -24,8 +22,13 @@ namespace TrueRealExchange
         public void CreateOrder()
         {
             var order = new Order(this, "Buy", 10000, 0.5);
-
             orders.Add(order);
+            throw new NotImplementedException();
+        }
+
+        public void SellCoins(Guid orderID)
+        {
+            throw new NotImplementedException();
         }
 
         public void CancelOrder()
@@ -37,7 +40,6 @@ namespace TrueRealExchange
         {
             foreach (var price in prices)
             {
-
                 foreach (var order in orders)
                 {
                     order.Update(prices);
