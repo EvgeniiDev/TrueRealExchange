@@ -6,11 +6,11 @@ namespace TrueRealExchange
 {
     internal class ClassicOrder : Order
     {
-        private List<Deal> deals = new List<Deal>();
+        public List<Deal> Deals { get; private set; } = new List<Deal>();
 
         public override void Update(decimal price)
         {
-            foreach (var deal in deals)
+            foreach (var deal in Deals)
             {
                 switch (deal.OrderType)
                 {
@@ -34,14 +34,14 @@ namespace TrueRealExchange
 
             foreach (var (key, value) in prices)
             {
-                deals.Add(new Deal(key, value, OrderType.Buy));
+                Deals.Add(new Deal(key, value, OrderType.Buy));
             }
 
             if (takes != null)
             {
                 foreach (var (key, value) in takes)
                 {
-                    deals.Add(new Deal(key, value, OrderType.Sell));
+                    Deals.Add(new Deal(key, value, OrderType.Sell));
                 }
             }
 
@@ -49,7 +49,7 @@ namespace TrueRealExchange
             {
                 foreach (var (key, value) in stops)
                 {
-                    deals.Add(new Deal(key, value, OrderType.Sell));
+                    Deals.Add(new Deal(key, value, OrderType.Sell));
                 }
             }
         }

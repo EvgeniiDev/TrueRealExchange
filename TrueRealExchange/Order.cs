@@ -1,3 +1,5 @@
+using System;
+
 namespace TrueRealExchange
 {
     public abstract class Order
@@ -6,9 +8,9 @@ namespace TrueRealExchange
         public decimal Amount;
         public string Pair;
 
-        public virtual void Update(decimal price)
+        public  virtual void Update(decimal price)
         {
-            
+            throw new NotImplementedException();
         }
     }
 }

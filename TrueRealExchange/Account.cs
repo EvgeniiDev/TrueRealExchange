@@ -1,3 +1,4 @@
+
 using System;
 using System.Collections.Generic;
 
@@ -5,27 +6,27 @@ namespace TrueRealExchange
 {
     public class Account
     {
-        public string Name;
-        private decimal BTCAmount;
-        private string defaultCurrency;
-        private decimal usdAmount;
-        private List<decimal> balanceHistory = new List<decimal>();
-        private Dictionary<Guid, Order> orders = new Dictionary<Guid, Order>();
+        public string Name { get; private set; }
+        readonly string DefaultCurrency;
+        public decimal Amount { get; private set; }
+        public List<decimal> BalanceHistory { get; private set; } = new List<decimal>();
+        public Dictionary<Guid, Order> Orders { get; private set; } = new Dictionary<Guid, Order>();
 
         public Account(string name, string defaultCurrency, decimal startBalance)
         {
             Name = name;
-            usdAmount = startBalance;
-            balanceHistory.Add(startBalance);
+            Amount = startBalance;
+            DefaultCurrency = defaultCurrency;
+            BalanceHistory.Add(startBalance);
         }
 
-        public void CreateOrder(string pair, Dictionary<decimal, decimal> prices,
+        public Guid CreateOrder(string pair, Dictionary<decimal, decimal> prices,
             Dictionary<decimal, decimal> takes = null, Dictionary<decimal, decimal> stops = null)
         {
             var order = new ClassicOrder(this, pair, prices, takes, stops);
             var guid = new Guid();
-            orders.Add(guid, order);
-            throw new NotImplementedException();
+            Orders.Add(guid, order);
+            return guid;
         }
 
         public void SellCoins(Guid orderID)
@@ -33,8 +34,10 @@ namespace TrueRealExchange
             throw new NotImplementedException();
         }
 
-        public void CancelOrder()
+        public void CancelOrder(Guid orderID)
         {
+            var order = Orders[orderID];
+            //order.deals.
             throw new NotImplementedException();
         }
 
@@ -42,13 +45,12 @@ namespace TrueRealExchange
         {
             foreach (var price in prices)
             {
-                foreach (var order in orders.Values)
+                foreach (var order in Orders.Values)
                 {
-                    if(order.Pair == price.Key)
+                    if (order.Pair == price.Key)
                         order.Update(price.Value);
                 }
             }
-            throw new NotImplementedException();
         }
     }
 }

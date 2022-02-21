@@ -16,14 +16,14 @@ namespace TrueRealExchange
             this.exchange = exchange;
         }
 
-        private void UpdateStates()
+        public void UpdateStates()
         {
             var prices = exchange.GetPrices();
             foreach (var acc in accounts)
                 acc.DataReceiver(prices);
         }
 
-        public Account CreateAccount(string name,string defaultCurrency, decimal startBalance)
+        public Account CreateAccount(string name, string defaultCurrency, decimal startBalance)
         {
             var account = new Account(name, defaultCurrency, startBalance);
             accounts.Add(account);
