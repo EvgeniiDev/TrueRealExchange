@@ -2,7 +2,7 @@ namespace TrueRealExchange
 {
     public abstract class Order
     {
-        public Account Owner;
+        private Account Owner;
         public decimal Amount;
         public string Pair;
 
