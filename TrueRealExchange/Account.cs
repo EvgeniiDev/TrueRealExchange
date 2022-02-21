@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TrueRealExchange
 {
-    class Account
+    public class Account
     {
         public string Name;
         private decimal BTCAmount;
@@ -19,10 +19,12 @@ namespace TrueRealExchange
             balanceHistory.Add(startBalance);
         }
 
-        public void CreateOrder()
+        public void CreateOrder(string pair, Dictionary<decimal, decimal> prices,
+            Dictionary<decimal, decimal> takes = null, Dictionary<decimal, decimal> stops = null)
         {
-            var order = new Order(this, "Buy", 10000, 0.5);
-            orders.Add(order);
+            var order = new ClassicOrder(this, pair, prices, takes, stops);
+            var guid = new Guid();
+            orders.Add(guid, order);
             throw new NotImplementedException();
         }
 
@@ -40,9 +42,10 @@ namespace TrueRealExchange
         {
             foreach (var price in prices)
             {
-                foreach (var order in orders)
+                foreach (var order in orders.Values)
                 {
-                    order.Update(prices);
+                    if(order.Pair == price.Key)
+                        order.Update(price.Value);
                 }
             }
             throw new NotImplementedException();

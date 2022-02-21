@@ -11,7 +11,7 @@ namespace TrueRealExchange
         private List<Account> accounts = new List<Account>();
         readonly IExchange exchange;
 
-        Exchange(IExchange exchange)
+        public Exchange(IExchange exchange)
         {
             this.exchange = exchange;
         }

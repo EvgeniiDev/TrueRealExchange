@@ -6,11 +6,11 @@ namespace TrueRealExchange
 {
     internal class ClassicOrder : Order
     {
-        private List<Deal> _deals = new List<Deal>();
+        private List<Deal> deals = new List<Deal>();
 
         public override void Update(decimal price)
         {
-            foreach (var deal in _deals)
+            foreach (var deal in deals)
             {
                 switch (deal.OrderType)
                 {
@@ -26,28 +26,32 @@ namespace TrueRealExchange
             }
         }
 
-        ClassicOrder(Account owner, string pair, Dictionary<decimal, decimal> prices,
+        public ClassicOrder(Account owner, string pair, Dictionary<decimal, decimal> prices,
             Dictionary<decimal, decimal> takes = null, Dictionary<decimal, decimal> stops = null)
         {
-            Owner = owner;
+            this.owner = owner;
             Pair = pair;
 
             foreach (var (key, value) in prices)
             {
-                _deals.Add(new Deal(key, value, OrderType.Buy));
+                deals.Add(new Deal(key, value, OrderType.Buy));
             }
 
             if (takes != null)
+            {
                 foreach (var (key, value) in takes)
                 {
-                    _deals.Add(new Deal(key, value, OrderType.Sell));
+                    deals.Add(new Deal(key, value, OrderType.Sell));
                 }
+            }
 
             if (stops != null)
+            {
                 foreach (var (key, value) in stops)
                 {
-                    _deals.Add(new Deal(key, value, OrderType.Sell));
+                    deals.Add(new Deal(key, value, OrderType.Sell));
                 }
+            }
         }
 
     }
