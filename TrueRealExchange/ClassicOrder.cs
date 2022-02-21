@@ -11,38 +11,45 @@ namespace TrueRealExchange
         public string Pair;
 
         private List<Deal> deals = new List<Deal>();
-        
+
         public void Update(decimal price)
         {
-            foreach(var deal in deals)
+            foreach (var deal in deals)
             {
-                if(deal.OrderType == OrderType.Buy)
+                if (deal.OrderType == OrderType.Buy && deal.Price >= price)
                 {
-
+                    deal.Status = Status.Close;
+                    Amount += deal.Amount;
+                }
+                else if (deal.OrderType == OrderType.Sell && deal.Price <= price)
+                {
+                    deal.Status = Status.Close;
+                    Amount -= deal.Amount < Amount ? Amount : deal.Amount;
                 }
             }
         }
 
-        ClassicOrder(Account owner, string pair, Dictionary<decimal,decimal> prices,
-            Dictionary<decimal, decimal> takes=null, Dictionary<decimal, decimal> stops=null)
+        ClassicOrder(Account owner, string pair, Dictionary<decimal, decimal> prices,
+            Dictionary<decimal, decimal> takes = null, Dictionary<decimal, decimal> stops = null)
         {
             Owner = owner;
             Pair = pair;
-            foreach(var buyDeals in prices)
+
+            foreach (var buyDeals in prices)
             {
-                var deal = new Deal(buyDeals.Key, buyDeals.Value,OrderType.Buy);
-                deals.Add(deal);
+                deals.Add(new Deal(buyDeals.Key, buyDeals.Value, OrderType.Buy));
             }
+
             foreach (var buyDeals in takes)
             {
-                var deal = new Deal(buyDeals.Key, buyDeals.Value, OrderType.Sell);
-                deals.Add(deal);
+                deals.Add(new Deal(buyDeals.Key, buyDeals.Value, OrderType.Sell));
             }
+
             foreach (var buyDeals in stops)
             {
-                var deal = new Deal(buyDeals.Key, buyDeals.Value, OrderType.Sell);
-                deals.Add(deal);
+                deals.Add(new Deal(buyDeals.Key, buyDeals.Value, OrderType.Sell));
             }
         }
+
     }
 }
