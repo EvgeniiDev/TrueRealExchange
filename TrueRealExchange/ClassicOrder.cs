@@ -4,27 +4,24 @@ using System.Linq;
 
 namespace TrueRealExchange
 {
-    class ClassicOrder
+    internal class ClassicOrder : Order
     {
-        public Account Owner;
-        public decimal Amount;
-        public string Pair;
+        private List<Deal> _deals = new List<Deal>();
 
-        private List<Deal> deals = new List<Deal>();
-
-        public void Update(decimal price)
+        public override void Update(decimal price)
         {
-            foreach (var deal in deals)
+            foreach (var deal in _deals)
             {
-                if (deal.OrderType == OrderType.Buy && deal.Price >= price)
+                switch (deal.OrderType)
                 {
-                    deal.Status = Status.Close;
-                    Amount += deal.Amount;
-                }
-                else if (deal.OrderType == OrderType.Sell && deal.Price <= price)
-                {
-                    deal.Status = Status.Close;
-                    Amount -= deal.Amount < Amount ? Amount : deal.Amount;
+                    case OrderType.Buy when deal.Price >= price:
+                        deal.Status = Status.Close;
+                        Amount += deal.Amount;
+                        break;
+                    case OrderType.Sell when deal.Price <= price:
+                        deal.Status = Status.Close;
+                        Amount -= deal.Amount < Amount ? Amount : deal.Amount;
+                        break;
                 }
             }
         }
@@ -35,20 +32,22 @@ namespace TrueRealExchange
             Owner = owner;
             Pair = pair;
 
-            foreach (var buyDeals in prices)
+            foreach (var (key, value) in prices)
             {
-                deals.Add(new Deal(buyDeals.Key, buyDeals.Value, OrderType.Buy));
+                _deals.Add(new Deal(key, value, OrderType.Buy));
             }
 
-            foreach (var buyDeals in takes)
-            {
-                deals.Add(new Deal(buyDeals.Key, buyDeals.Value, OrderType.Sell));
-            }
+            if (takes != null)
+                foreach (var (key, value) in takes)
+                {
+                    _deals.Add(new Deal(key, value, OrderType.Sell));
+                }
 
-            foreach (var buyDeals in stops)
-            {
-                deals.Add(new Deal(buyDeals.Key, buyDeals.Value, OrderType.Sell));
-            }
+            if (stops != null)
+                foreach (var (key, value) in stops)
+                {
+                    _deals.Add(new Deal(key, value, OrderType.Sell));
+                }
         }
 
     }
