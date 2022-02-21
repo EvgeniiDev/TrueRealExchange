@@ -5,7 +5,7 @@ namespace TrueRealExchange
 {
     internal class Program
     {
-        static void Main(string[] args)
+        /*static void Main(string[] args)
         {
             var fakePrice = new FakePriceGenerator();
             var virtualExchange = new Exchange(fakePrice);
@@ -15,6 +15,6 @@ namespace TrueRealExchange
             var acc3 = virtualExchange.CreateAccount("Aboba", "USD", 10000);
 
             Console.WriteLine("Hello World!");
-        }
+        }*/
     }
 }

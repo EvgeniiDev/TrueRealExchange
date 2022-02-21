@@ -20,19 +20,19 @@ namespace TrueRealExchange
             fakePrice.prices = new Dictionary<string, decimal> { { "BTCUSDT", 10 }, { "ETHUSDT", 10 } };
             acc1 = exchange.CreateAccount("Aboba", "USD", 10000);
         }
-        [Test]
+        [TestCase(1000)]
         public void BuySomeBTC(decimal startBalance)
         {
-            var account = new Account("юджин", "шоколадные монетки", startBalance);
-            fakePrice.prices["шоколадные монетки"] = 9m;
+            var account = new Account("СЋРґР¶РёРЅ", "С€РѕРєРѕР»Р°РґРЅС‹Рµ РјРѕРЅРµС‚РєРё", startBalance);
+            fakePrice.prices["С€РѕРєРѕР»Р°РґРЅС‹Рµ РјРѕРЅРµС‚РєРё"] = 9m;
             exchange.UpdateStates();
             var buy = new Dictionary<decimal, decimal>() { { 10, 10 } };
-            var order = account.CreateOrder("шоколадные монетки", buy);
-            fakePrice.prices["шоколадные монетки"] = 10m;
+            var order = account.CreateOrder("С€РѕРєРѕР»Р°РґРЅС‹Рµ РјРѕРЅРµС‚РєРё", buy);
+            fakePrice.prices["С€РѕРєРѕР»Р°РґРЅС‹Рµ РјРѕРЅРµС‚РєРё"] = 10m;
             exchange.UpdateStates();
-            fakePrice.prices["шоколадные монетки"] = 11m;
+            fakePrice.prices["С€РѕРєРѕР»Р°РґРЅС‹Рµ РјРѕРЅРµС‚РєРё"] = 11m;
             exchange.UpdateStates();
-            Assert.AreEqual(account.Orders[order].Amount, 10);
+            Assert.AreEqual( 10, account.Orders[order].Amount);
         }
 
     }
