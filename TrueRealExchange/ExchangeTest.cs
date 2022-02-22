@@ -23,6 +23,7 @@ namespace TrueRealExchange
         [TestCase(1000)]
         public void BuySomeBTC(decimal startBalance)
         {
+            //ToDo починить списывание деняк
             var account = exchange.CreateAccount("юджин", "шоколадные монетки", startBalance);
             var buy = new Dictionary<decimal, decimal>() { { 10, 10 } };
             var order = account.CreateOrder("шоколадные монетки", buy);
@@ -33,6 +34,7 @@ namespace TrueRealExchange
             fakePrice.prices["шоколадные монетки"] = 11m;
             exchange.UpdateStates();
             Assert.AreEqual(10, account.Orders[order].Amount);
+            Assert.AreEqual(900m, account.Amount);
         }
 
     }

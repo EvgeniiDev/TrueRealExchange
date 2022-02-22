@@ -17,7 +17,6 @@ namespace TrueRealExchange
                 //TODO тут нужно запоминать старую цену, чтобы понимать ,проищошел рост цены или падение.
                 if (deal.OrderType == OrderType.Buy && deal.Status == Status.Open)
                 {
-                    //TODO при первом заходе в цикл мы не можем купить шоколадные монетки потому что ластпрайс = 0
                     if (deal.Price >= price)
                     {
                         deal.Status = Status.Close;
