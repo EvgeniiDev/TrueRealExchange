@@ -18,6 +18,7 @@ namespace TrueRealExchange
 
         public void UpdateStates()
         {
+            ;
             var prices = exchange.GetPrices();
             foreach (var acc in accounts)
                 acc.DataReceiver(prices);
