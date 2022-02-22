@@ -7,23 +7,32 @@ namespace TrueRealExchange
     internal class ClassicOrder : Order
     {
         public List<Deal> Deals { get; private set; } = new List<Deal>();
+        private decimal lastPrice = 0;
 
         public override void Update(decimal price)
         {
+
             foreach (var deal in Deals)
             {
-                switch (deal.OrderType)
+                //TODO тут нужно запоминать старую цену, чтобы понимать ,проищошел рост цены или падение.
+                if (deal.OrderType == OrderType.Buy && deal.Status == Status.Open)
                 {
-                    case OrderType.Buy when deal.Price >= price:
+                    if (deal.Price >= price)
+                    {
                         deal.Status = Status.Close;
                         Amount += deal.Amount;
-                        break;
-                    case OrderType.Sell when deal.Price <= price:
+                    }
+                }
+                else if (deal.OrderType == OrderType.Sell)
+                {
+                    if (deal.Price >= lastPrice && deal.Price <= price)
+                    {
                         deal.Status = Status.Close;
                         Amount -= deal.Amount < Amount ? Amount : deal.Amount;
-                        break;
+                    }
                 }
             }
+            lastPrice = price;
         }
 
         public ClassicOrder(Account owner, string pair, Dictionary<decimal, decimal> prices,
