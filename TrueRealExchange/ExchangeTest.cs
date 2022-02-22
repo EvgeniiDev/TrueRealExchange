@@ -24,10 +24,10 @@ namespace TrueRealExchange
         public void BuySomeBTC(decimal startBalance)
         {
             var account = exchange.CreateAccount("юджин", "шоколадные монетки", startBalance);
-            fakePrice.prices["шоколадные монетки"] = 9m;
-            exchange.UpdateStates();
             var buy = new Dictionary<decimal, decimal>() { { 10, 10 } };
             var order = account.CreateOrder("шоколадные монетки", buy);
+            fakePrice.prices["шоколадные монетки"] = 9m;
+            exchange.UpdateStates();
             fakePrice.prices["шоколадные монетки"] = 10m;
             exchange.UpdateStates();
             fakePrice.prices["шоколадные монетки"] = 11m;

@@ -7,18 +7,18 @@ namespace TrueRealExchange
     internal class ClassicOrder : Order
     {
         public List<Deal> Deals { get; private set; } = new List<Deal>();
-        private decimal lastPrice=0;
+        private decimal lastPrice = 0;
 
         public override void Update(decimal price)
         {
-            
+
             foreach (var deal in Deals)
             {
                 //TODO тут нужно запоминать старую цену, чтобы понимать ,проищошел рост цены или падение.
-                if (deal.OrderType == OrderType.Buy)
+                if (deal.OrderType == OrderType.Buy && deal.Status == Status.Open)
                 {
                     //TODO при первом заходе в цикл мы не можем купить шоколадные монетки потому что ластпрайс = 0
-                    if (deal.Price <= lastPrice && deal.Price >= price)
+                    if (deal.Price >= price)
                     {
                         deal.Status = Status.Close;
                         Amount += deal.Amount;
@@ -26,7 +26,7 @@ namespace TrueRealExchange
                 }
                 else if (deal.OrderType == OrderType.Sell)
                 {
-                    if (deal.Price>=lastPrice && deal.Price <= price)
+                    if (deal.Price >= lastPrice && deal.Price <= price)
                     {
                         deal.Status = Status.Close;
                         Amount -= deal.Amount < Amount ? Amount : deal.Amount;
