@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TrueRealExchange.Orders
 {
-    class FutureOrderLong : Order
+    class FuturesOrderLong : Order
     {
         public decimal Leverage { get; set; }
         public List<Deal> Deals { get; private set; } = new List<Deal>();
@@ -36,7 +36,7 @@ namespace TrueRealExchange.Orders
             lastPrice = price;
         }
 
-        public FuturesOrderLong(Account owner, string pair, Dictionary<decimal, decimal> prices, decimal leverage,
+        FuturesOrderLong(Account owner, string pair, Dictionary<decimal, decimal> prices, decimal leverage,
             Dictionary<decimal, decimal> takes = null, Dictionary<decimal, decimal> stops = null)
         {
             if (owner.Amount * leverage < prices.Select(x => x.Value * x.Key).Sum())
@@ -52,7 +52,7 @@ namespace TrueRealExchange.Orders
             this.owner = owner;
             Pair = pair;
             Leverage = leverage;
-         
+
             foreach (var (key, value) in prices)
             {
                 Deals.Add(new Deal(key, value, OrderType.Buy));
@@ -77,7 +77,7 @@ namespace TrueRealExchange.Orders
 
         private bool IsPositive(Dictionary<decimal, decimal> dictionary)
         {
-            return prices.Keys.All(x => x >= 0) && prices.Values.All(x => x >= 0);
+            return dictionary.Keys.All(x => x >= 0) && dictionary.Values.All(x => x >= 0);
         }
     }
 }

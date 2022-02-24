@@ -29,6 +29,16 @@ namespace TrueRealExchange
             return guid;
         }
 
+        internal void RemoveMoney(decimal v)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void AddMoney(decimal v)
+        {
+            throw new NotImplementedException();
+        }
+
         public void SellCoins(Guid orderID)
         {
             throw new NotImplementedException();
