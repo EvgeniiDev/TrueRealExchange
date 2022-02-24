@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TrueRealExchange
 {
-    internal class Deal
+    public class Deal
     {
         public decimal Price;
         public decimal Amount;

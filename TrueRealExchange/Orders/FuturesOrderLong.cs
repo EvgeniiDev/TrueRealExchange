@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TrueRealExchange.Orders
 {
-    class FuturesOrderLong : Order
+    class FuturesOrderLong : BaseOrder
     {
         public decimal Leverage { get; set; }
-        public List<Deal> Deals { get; private set; } = new List<Deal>();
 
-        decimal lastPrice = 0;
         public override void Update(decimal price)
         {
             foreach (var deal in Deals)
@@ -19,16 +15,16 @@ namespace TrueRealExchange.Orders
                 if ((lastPrice >= price && deal.Price <= lastPrice && deal.Price >= price)
                     || (lastPrice <= price && deal.Price >= lastPrice && deal.Price <= price))
                 {
+                    deal.Status = Status.Close;
                     if (deal.OrderType == OrderType.Buy)
                     {
-                        deal.Status = Status.Close;
                         Amount += deal.Amount;
                         owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
                     }
                     else if (deal.OrderType == OrderType.Sell)
                     {
-                        deal.Status = Status.Close;
                         Amount -= deal.Amount < Amount ? deal.Amount : Amount;
+                        //TODO тут скорее всего ошибка в начислении денег на счёт
                         owner.AddMoney(deal.Amount * deal.Price / Leverage);
                     }
                 }
@@ -53,31 +49,19 @@ namespace TrueRealExchange.Orders
             Pair = pair;
             Leverage = leverage;
 
-            foreach (var (key, value) in prices)
-            {
-                Deals.Add(new Deal(key, value, OrderType.Buy));
-            }
+            Deals.AddRange(prices.Select(x => new Deal(x.Key, x.Value, OrderType.Sell)));
 
             if (takes != null)
-            {
-                foreach (var (key, value) in takes)
-                {
-                    Deals.Add(new Deal(key, value, OrderType.Sell));
-                }
-            }
+                Deals.AddRange(takes.Select(x => new Deal(x.Key, x.Value, OrderType.Sell)));
 
             if (stops != null)
-            {
-                foreach (var (key, value) in stops)
-                {
-                    Deals.Add(new Deal(key, value, OrderType.Sell));
-                }
-            }
+                Deals.AddRange(stops.Select(x => new Deal(x.Key, x.Value, OrderType.Sell)));
         }
 
         private bool IsPositive(Dictionary<decimal, decimal> dictionary)
         {
-            return dictionary.Keys.All(x => x >= 0) && dictionary.Values.All(x => x >= 0);
+            return dictionary.Keys.All(x => x >= 0)
+                && dictionary.Values.All(x => x >= 0);
         }
     }
 }

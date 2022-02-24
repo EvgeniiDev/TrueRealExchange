@@ -10,7 +10,7 @@ namespace TrueRealExchange
         readonly string DefaultCurrency;
         public decimal Amount { get; private set; }
         public List<decimal> BalanceHistory { get; private set; } = new List<decimal>();
-        public Dictionary<Guid, Order> Orders { get; private set; } = new Dictionary<Guid, Order>();
+        public Dictionary<Guid, BaseOrder> Orders { get; private set; } = new Dictionary<Guid, BaseOrder>();
 
         public Account(string name, string defaultCurrency, decimal startBalance)
         {
@@ -20,10 +20,10 @@ namespace TrueRealExchange
             BalanceHistory.Add(startBalance);
         }
 
-        public Guid CreateOrder(string pair, Dictionary<decimal, decimal> prices,
+        public Guid CreateOrder(OrderType orderType, string pair, Dictionary<decimal, decimal> prices,
             Dictionary<decimal, decimal> takes = null, Dictionary<decimal, decimal> stops = null)
         {
-            var order = new ClassicOrder(this, pair, prices, takes, stops);
+            var order = new ClassicOrder(orderType, this, pair, prices, takes, stops);
             var guid = new Guid();
             Orders.Add(guid, order);
             return guid;

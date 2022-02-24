@@ -26,7 +26,7 @@ namespace TrueRealExchange
             //ToDo починить списывание деняк
             var account = exchange.CreateAccount("юджин", "шоколадные монетки", startBalance);
             var buy = new Dictionary<decimal, decimal>() { { 10, 10 } };
-            var order = account.CreateOrder("шоколадные монетки", buy);
+            var order = account.CreateOrder(OrderType.Buy, "шоколадные монетки", buy);
             fakePrice.prices["шоколадные монетки"] = 9m;
             exchange.UpdateStates();
             fakePrice.prices["шоколадные монетки"] = 10m;

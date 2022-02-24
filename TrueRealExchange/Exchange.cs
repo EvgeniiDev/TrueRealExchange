@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace TrueRealExchange
 {
@@ -18,7 +14,6 @@ namespace TrueRealExchange
 
         public void UpdateStates()
         {
-            ;
             var prices = exchange.GetPrices();
             foreach (var acc in accounts)
                 acc.DataReceiver(prices);
