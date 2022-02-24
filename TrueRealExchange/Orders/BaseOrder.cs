@@ -7,6 +7,7 @@ namespace TrueRealExchange
     {
         public Account owner;
         public decimal Amount;
+        public decimal TotalSpend;
         public string Pair;
         public List<Deal> Deals = new List<Deal>();
         public decimal lastPrice = 0;

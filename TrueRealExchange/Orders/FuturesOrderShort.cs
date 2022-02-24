@@ -22,7 +22,7 @@ namespace TrueRealExchange.Orders
                         Amount += deal.Amount;
                         owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
                     }
-                    else if (deal.OrderType == OrderType.Sell)
+                    else if (deal.OrderType == OrderType.Sell && Amount>0)
                     {
                         Amount -= deal.Amount < Amount ? deal.Amount : Amount;
                         //TODO тут скорее всего ошибка в начислении денег на счёт

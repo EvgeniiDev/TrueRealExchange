@@ -20,12 +20,18 @@ namespace TrueRealExchange.Orders
                     {
                         Amount += deal.Amount;
                         owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
+                        TotalSpend += deal.Amount * deal.Price;
                     }
-                    else if (deal.OrderType == OrderType.Sell)
+                    else if (deal.OrderType == OrderType.Sell && Amount > 0)
                     {
-                        Amount -= deal.Amount < Amount ? deal.Amount : Amount;
-                        //TODO тут скорее всего ошибка в начислении денег на счёт
-                        owner.AddMoney(deal.Amount * deal.Price / Leverage);
+                        var priceOfSell = deal.Amount * deal.Price;
+                        var priceOfBuy = deal.Amount * TotalSpend / Amount;
+                        var delta = priceOfSell - priceOfBuy;
+                        owner.AddMoney((TotalSpend / Amount)/Leverage);
+                        if (delta > 0)
+                            owner.AddMoney(delta);
+                        else
+                            owner.RemoveMoney(delta);
                     }
                 }
             }
