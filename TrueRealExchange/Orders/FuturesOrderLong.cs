@@ -8,6 +8,7 @@ namespace TrueRealExchange.Orders
     {
         public decimal Leverage { get; set; }
         static decimal feeFactor = 1.002m;
+
         public override void Update(decimal price)
         {
             foreach (var deal in Deals)
@@ -22,8 +23,7 @@ namespace TrueRealExchange.Orders
                         owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
                         TotalSpend += deal.Amount * deal.Price;
                         //TODO посчитать цену ликвидации
-
-                        Deals.Where(x => x.Status == OrderType.LiqLong);
+                        Deals.Where(x => x.OrderType == OrderType.LiqLong);
                         var liqPrice = (TotalSpend - (TotalSpend / Leverage)) / Amount * feeFactor;
 
                     }
@@ -31,7 +31,7 @@ namespace TrueRealExchange.Orders
                     {
                         var priceOfSell = deal.Amount * deal.Price;
                         var priceOfBuy = deal.Amount * TotalSpend / Amount;
-                        var delta = priceOfSell - priceOfBuy;
+                        var delta = priceOfSell - priceOfBuy
                         owner.AddMoney((TotalSpend / Amount)/Leverage);
                         if (delta > 0)
                             owner.AddMoney(delta);
@@ -60,19 +60,19 @@ namespace TrueRealExchange.Orders
             Pair = pair;
             Leverage = leverage;
 
-            Deals.AddRange(prices.Select(x => new Deal(x.Key, x.Value, OrderType.Sell)));
+            Deals.AddRange(prices.Select(x => new Deal(x.Amount, x.Price, OrderType.Sell)));
 
             if (takes != null)
-                Deals.AddRange(takes.Select(x => new Deal(x.Key, x.Value, OrderType.Sell)));
+                Deals.AddRange(takes.Select(x => new Deal(x.Amount, x.Price, OrderType.Sell)));
 
             if (stops != null)
-                Deals.AddRange(stops.Select(x => new Deal(x.Key, x.Value, OrderType.Sell)));
+                Deals.AddRange(stops.Select(x => new Deal(x.Amount, x.Price, OrderType.Sell)));
         }
 
-        private bool IsPositive(Dictionary<decimal, decimal> dictionary)
+        private bool IsPositive(List<Deal> dictionary)
         {
-            return dictionary.Keys.All(x => x >= 0)
-                && dictionary.Values.All(x => x >= 0);
+            return dictionary.All(x => x.Amount >= 0)
+                && dictionary.All(x => x.Price >= 0);
         }
     }
 }
