@@ -31,7 +31,7 @@ namespace TrueRealExchange.Orders
                     {
                         var priceOfSell = deal.Amount * deal.Price;
                         var priceOfBuy = deal.Amount * TotalSpend / Amount;
-                        var delta = priceOfSell - priceOfBuy
+                        var delta = priceOfSell - priceOfBuy;
                         owner.AddMoney((TotalSpend / Amount)/Leverage);
                         if (delta > 0)
                             owner.AddMoney(delta);

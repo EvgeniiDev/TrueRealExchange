@@ -29,30 +29,30 @@ namespace TrueRealExchange
             lastPrice = price;
         }
 
-        public ClassicOrder(OrderType orderType, Account owner, string pair, Dictionary<decimal, decimal> prices,
+        public ClassicOrder(OrderType orderType, Account owner, string pair, List<Deal> prices,
             List<Deal> takes = null, List<Deal> stops = null)
         {
             this.owner = owner;
             Pair = pair;
 
-            foreach (var (key, value) in prices)
+            foreach (var item in prices)
             {
                 if (orderType == OrderType.Buy)
-                    Deals.Add(new Deal(key, value, OrderType.Buy));
+                    Deals.Add(new Deal(item.Amount, item.Price, OrderType.Buy));
                 else
-                    Deals.Add(new Deal(key, value, OrderType.Buy));
+                    Deals.Add(new Deal(item.Amount, item.Price, OrderType.Buy));
             }
 
             if (takes != null)
-                foreach (var (key, value) in takes)
+                foreach (var item in takes)
                 {
-                    Deals.Add(new Deal(key, value, OrderType.Sell));
+                    Deals.Add(new Deal(item.Amount, item.Price, OrderType.Sell));
                 }
 
             if (stops != null)
-                foreach (var (key, value) in stops)
+                foreach (var item in stops)
                 {
-                    Deals.Add(new Deal(key, value, OrderType.Sell));
+                    Deals.Add(new Deal(item.Amount, item.Price, OrderType.Sell));
                 }
         }
     }
