@@ -8,6 +8,13 @@ namespace TrueRealExchange
         public OrderType OrderType;
         public Status Status;
 
+
+        public Deal(decimal price, decimal amount)
+        {
+            Price = price;
+            Amount = amount;
+        }
+
         public Deal(decimal price, decimal amount, OrderType orderType)
         {
             Price = price;
@@ -20,6 +27,8 @@ namespace TrueRealExchange
     {
         Buy,
         Sell,
+        LiqLong,
+        LiqShort,
     }
 
     public enum Status

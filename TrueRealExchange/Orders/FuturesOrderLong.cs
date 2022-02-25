@@ -7,7 +7,7 @@ namespace TrueRealExchange.Orders
     class FuturesOrderLong : BaseOrder
     {
         public decimal Leverage { get; set; }
-
+        static decimal feeFactor = 1.002m;
         public override void Update(decimal price)
         {
             foreach (var deal in Deals)
@@ -21,6 +21,11 @@ namespace TrueRealExchange.Orders
                         Amount += deal.Amount;
                         owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
                         TotalSpend += deal.Amount * deal.Price;
+                        //TODO посчитать цену ликвидации
+
+                        Deals.Where(x => x.Status == OrderType.LiqLong);
+                        var liqPrice = (TotalSpend - (TotalSpend / Leverage)) / Amount * feeFactor;
+
                     }
                     else if (deal.OrderType == OrderType.Sell && Amount > 0)
                     {
@@ -38,8 +43,8 @@ namespace TrueRealExchange.Orders
             lastPrice = price;
         }
 
-        FuturesOrderLong(Account owner, string pair, Dictionary<decimal, decimal> prices, decimal leverage,
-            Dictionary<decimal, decimal> takes = null, Dictionary<decimal, decimal> stops = null)
+        FuturesOrderLong(Account owner, string pair, List<Deal> prices, decimal leverage,
+            List<Deal> takes = null, List<Deal> stops = null)
         {
             if (owner.Amount * leverage < prices.Select(x => x.Value * x.Key).Sum())
             {

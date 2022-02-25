@@ -30,7 +30,7 @@ namespace TrueRealExchange
         }
 
         public ClassicOrder(OrderType orderType, Account owner, string pair, Dictionary<decimal, decimal> prices,
-            Dictionary<decimal, decimal> takes = null, Dictionary<decimal, decimal> stops = null)
+            List<Deal> takes = null, List<Deal> stops = null)
         {
             this.owner = owner;
             Pair = pair;

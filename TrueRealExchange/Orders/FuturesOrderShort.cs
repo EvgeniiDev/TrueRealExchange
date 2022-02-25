@@ -33,8 +33,8 @@ namespace TrueRealExchange.Orders
             lastPrice = price;
         }
 
-        FuturesOrderShort(Account owner, string pair, Dictionary<decimal, decimal> prices, decimal leverage,
-            Dictionary<decimal, decimal> takes = null, Dictionary<decimal, decimal> stops = null)
+        FuturesOrderShort(Account owner, string pair, List<Deal> prices, decimal leverage,
+            List<Deal> takes = null, List<Deal> stops = null)
         {
             if (owner.Amount * leverage < prices.Select(x => x.Value * x.Key).Sum())
             {
