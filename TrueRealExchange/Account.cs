@@ -20,8 +20,8 @@ namespace TrueRealExchange
             BalanceHistory.Add(startBalance);
         }
 
-        public Guid CreateOrder(OrderType orderType, string pair, Dictionary<decimal, decimal> prices,
-            Dictionary<decimal, decimal> takes = null, Dictionary<decimal, decimal> stops = null)
+        public Guid CreateOrder(OrderType orderType, string pair, List<Deal> prices,
+            List<Deal> takes = null, List<Deal> stops = null)
         {
             var order = new ClassicOrder(orderType, this, pair, prices, takes, stops);
             var guid = new Guid();
@@ -47,6 +47,7 @@ namespace TrueRealExchange
         public void CancelOrder(Guid orderID)
         {
             var order = Orders[orderID];
+            order.Status = Status.Close;
             //order.deals.
             throw new NotImplementedException();
         }

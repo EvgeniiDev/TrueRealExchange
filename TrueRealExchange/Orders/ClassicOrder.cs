@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TrueRealExchange
 {
@@ -10,19 +9,22 @@ namespace TrueRealExchange
         {
             foreach (var deal in Deals)
             {
-                if ((lastPrice >= price && deal.Price <= lastPrice && deal.Price >= price)
-                    || (lastPrice <= price && deal.Price >= lastPrice && deal.Price <= price))
+                if (lastPrice >= price && deal.Price <= lastPrice && deal.Price >= price
+                    || lastPrice <= price && deal.Price >= lastPrice && deal.Price <= price)
                 {
                     deal.Status = Status.Close;
-                    if (deal.OrderType == OrderType.Buy)
+                    switch (deal.OrderType)
                     {
-                        Amount += deal.Amount;
-                        owner.RemoveMoney(deal.Amount * deal.Price);
-                    }
-                    else if (deal.OrderType == OrderType.Sell)
-                    {
-                        Amount -= deal.Amount < Amount ? deal.Amount : Amount;
-                        owner.AddMoney(deal.Amount * deal.Price);
+                        case OrderType.Buy:
+                            Amount += deal.Amount;
+                            owner.RemoveMoney(deal.Amount * deal.Price);
+                            break;
+                        case OrderType.Sell:
+                            Amount -= deal.Amount < Amount ? deal.Amount : Amount;
+                            owner.AddMoney(deal.Amount * deal.Price);
+                            break;
+                        default:
+                            throw new NotImplementedException();
                     }
                 }
             }
@@ -34,13 +36,14 @@ namespace TrueRealExchange
         {
             this.owner = owner;
             Pair = pair;
+            Status = Status.Open;
 
             foreach (var item in prices)
             {
                 if (orderType == OrderType.Buy)
                     Deals.Add(new Deal(item.Amount, item.Price, OrderType.Buy));
                 else
-                    Deals.Add(new Deal(item.Amount, item.Price, OrderType.Buy));
+                    Deals.Add(new Deal(item.Amount, item.Price, OrderType.Sell));
             }
 
             if (takes != null)

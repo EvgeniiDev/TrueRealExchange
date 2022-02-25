@@ -6,27 +6,55 @@ namespace TrueRealExchange.Orders
 {
     class FuturesOrderShort : BaseOrder
     {
-        public decimal Leverage { get; set; }
+        private decimal Leverage { get; set; }
+        private const decimal feeFactor = 1.002m;
+        private decimal liquidationPrice;
 
         public override void Update(decimal price)
         {
-            foreach (var deal in Deals)
+            if (Status == Status.Close)
+                return;
+            if (liquidationPrice != 0 && liquidationPrice <= price)
             {
-                if ((lastPrice >= price && deal.Price <= lastPrice && deal.Price >= price)
-                    || (lastPrice <= price && deal.Price >= lastPrice && deal.Price <= price))
+                //Ликвидация позиции
+                Status = Status.Close;
+                //TODO т.к позиция полностью ликвидирована её бы перенести куда-то в другое место мб...
+            }
+            else
+            {
+                foreach (var deal in Deals)
                 {
-                    deal.Status = Status.Close;
-                    //TODO полностью переписать все расчёты под шорт
-                    if (deal.OrderType == OrderType.Buy)
+                    if (lastPrice >= price && deal.Price <= lastPrice && deal.Price >= price
+                        || lastPrice <= price && deal.Price >= lastPrice && deal.Price <= price)
                     {
-                        Amount += deal.Amount;
-                        owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
-                    }
-                    else if (deal.OrderType == OrderType.Sell && Amount>0)
-                    {
-                        Amount -= deal.Amount < Amount ? deal.Amount : Amount;
-                        //TODO тут скорее всего ошибка в начислении денег на счёт
-                        owner.AddMoney(deal.Amount * deal.Price / Leverage);
+                        deal.Status = Status.Close;
+                        switch (deal.OrderType)
+                        {
+                            case OrderType.Buy:
+                                {
+                                    Amount += deal.Amount;
+                                    owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
+                                    TotalSpend += deal.Amount * deal.Price;
+                                    liquidationPrice = (TotalSpend - TotalSpend / Leverage) / Amount * feeFactor;
+                                    break;
+                                }
+                            case OrderType.Sell:
+                                {
+                                    var priceOfSell = deal.Amount * deal.Price;
+                                    var priceOfBuy = deal.Amount * TotalSpend / Amount;
+                                    var delta = priceOfSell - priceOfBuy;
+                                    owner.AddMoney(TotalSpend / Amount / Leverage);
+                                    if (delta > 0)
+                                        owner.AddMoney(delta);
+                                    else
+                                        owner.RemoveMoney(delta);
+                                    Amount -= deal.Amount;
+                                    break;
+
+                                }
+                            default:
+                                throw new NotImplementedException();
+                        }
                     }
                 }
             }
@@ -36,35 +64,33 @@ namespace TrueRealExchange.Orders
         FuturesOrderShort(Account owner, string pair, List<Deal> prices, decimal leverage,
             List<Deal> takes = null, List<Deal> stops = null)
         {
-            if (owner.Amount * leverage < prices.Select(x => x.Value * x.Key).Sum())
-            {
+            if (owner.Amount * leverage < prices.Select(x => x.Amount * x.Price).Sum())
                 throw new Exception("No money");
-            }
 
-            if (!IsPositive(prices)
-                || (takes != null && !IsPositive(takes))
-                || (stops != null && !IsPositive(stops)))
-            {
+            if (!IsPositive(prices) || takes != null && !IsPositive(takes)
+                                    || stops != null && !IsPositive(stops))
                 throw new Exception("Not correct input");
-            }
 
             this.owner = owner;
             Pair = pair;
             Leverage = leverage;
+            Status = Status.Open;
+            //TODO сразу можно цену ликвидации посчитать
 
-            Deals.AddRange(prices.Select(x => new Deal(x.Key, x.Value, OrderType.Sell)));
+            Deals.AddRange(prices.Select(x => new Deal(x.Amount, x.Price, OrderType.Sell)));
 
             if (takes != null)
-                Deals.AddRange(takes.Select(x => new Deal(x.Key, x.Value, OrderType.Sell)));
+                Deals.AddRange(takes.Select(x => new Deal(x.Amount, x.Price, OrderType.Sell)));
 
             if (stops != null)
-                Deals.AddRange(stops.Select(x => new Deal(x.Key, x.Value, OrderType.Sell)));
+                Deals.AddRange(stops.Select(x => new Deal(x.Amount, x.Price, OrderType.Sell)));
         }
 
-        private bool IsPositive(Dictionary<decimal, decimal> dictionary)
+        private static bool IsPositive(List<Deal> dictionary)
         {
-            return dictionary.Keys.All(x => x >= 0)
-                && dictionary.Values.All(x => x >= 0);
+            if (dictionary == null) throw new ArgumentNullException(nameof(dictionary));
+            return dictionary.All(x => x.Amount >= 0)
+                   && dictionary.All(x => x.Price >= 0);
         }
     }
 }
