@@ -24,6 +24,8 @@ namespace TrueRealExchange.Orders
             {
                 foreach (var deal in Deals)
                 {
+                    if (deal.Status == Status.Close)
+                        continue;
                     if (lastPrice >= price && deal.Price <= lastPrice && deal.Price >= price
                         || lastPrice <= price && deal.Price >= lastPrice && deal.Price <= price)
                     {
@@ -32,16 +34,15 @@ namespace TrueRealExchange.Orders
                         {
                             case OrderType.Buy:
                                 {
+                                    liquidationPrice = (TotalSpend - TotalSpend / Leverage) / Amount * feeFactor;
+
                                     Amount += deal.Amount;
                                     owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
                                     TotalSpend += deal.Amount * deal.Price;
-                                    liquidationPrice = (TotalSpend - TotalSpend / Leverage) / Amount * feeFactor;
-                                    break;
-                                }
-                            case OrderType.Sell:
-                                {
-                                    var priceOfSell = deal.Amount * deal.Price;
-                                    var priceOfBuy = deal.Amount * TotalSpend / Amount;
+
+
+                                    var priceOfSell = deal.Amount * TotalSpend / Amount;
+                                    var priceOfBuy = deal.Price;
                                     var delta = priceOfSell - priceOfBuy;
                                     owner.AddMoney(TotalSpend / Amount / Leverage);
                                     if (delta > 0)
@@ -50,8 +51,21 @@ namespace TrueRealExchange.Orders
                                         owner.RemoveMoney(delta);
                                     Amount -= deal.Amount;
                                     break;
-
                                 }
+                            //case OrderType.Sell:
+                            //    {
+                            //        var priceOfSell = deal.Amount * deal.Price;
+                            //        var priceOfBuy = deal.Amount * TotalSpend / Amount;
+                            //        var delta = priceOfSell - priceOfBuy;
+                            //        owner.AddMoney(TotalSpend / Amount / Leverage);
+                            //        if (delta > 0)
+                            //            owner.AddMoney(delta);
+                            //        else
+                            //            owner.RemoveMoney(delta);
+                            //        Amount -= deal.Amount;
+                            //        break;
+
+                            //    }
                             default:
                                 throw new NotImplementedException();
                         }
@@ -77,13 +91,13 @@ namespace TrueRealExchange.Orders
             Status = Status.Open;
             //TODO сразу можно цену ликвидации посчитать
 
-            Deals.AddRange(prices.Select(x => new Deal(x.Amount, x.Price, OrderType.Sell)));
+            Deals.AddRange(prices.Select(x => new Deal(x.Price, x.Amount, OrderType.Sell)));
 
             if (takes != null)
-                Deals.AddRange(takes.Select(x => new Deal(x.Amount, x.Price, OrderType.Sell)));
+                Deals.AddRange(takes.Select(x => new Deal(x.Price, x.Amount, OrderType.Buy)));
 
             if (stops != null)
-                Deals.AddRange(stops.Select(x => new Deal(x.Amount, x.Price, OrderType.Sell)));
+                Deals.AddRange(stops.Select(x => new Deal(x.Price, x.Amount, OrderType.Buy)));
         }
 
         private static bool IsPositive(List<Deal> dictionary)

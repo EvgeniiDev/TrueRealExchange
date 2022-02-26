@@ -31,12 +31,12 @@ namespace TrueRealExchange
 
         internal void RemoveMoney(decimal v)
         {
-            throw new NotImplementedException();
+            Amount -= v;
         }
 
         internal void AddMoney(decimal v)
         {
-            throw new NotImplementedException();
+            Amount += v;
         }
 
         public void SellCoins(Guid orderID)

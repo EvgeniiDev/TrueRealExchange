@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TrueRealExchange
 {
@@ -7,12 +8,15 @@ namespace TrueRealExchange
     {
         public override void Update(decimal price)
         {
+            if (Status == Status.Close)
+                return;
             foreach (var deal in Deals)
             {
+                if (deal.Status == Status.Close)
+                    continue;
                 if (lastPrice >= price && deal.Price <= lastPrice && deal.Price >= price
                     || lastPrice <= price && deal.Price >= lastPrice && deal.Price <= price)
                 {
-                    deal.Status = Status.Close;
                     switch (deal.OrderType)
                     {
                         case OrderType.Buy:
@@ -26,6 +30,8 @@ namespace TrueRealExchange
                         default:
                             throw new NotImplementedException();
                     }
+                    deal.Status = Status.Close;
+                    //if(Deals.All())
                 }
             }
             lastPrice = price;
@@ -38,25 +44,16 @@ namespace TrueRealExchange
             Pair = pair;
             Status = Status.Open;
 
-            foreach (var item in prices)
-            {
-                if (orderType == OrderType.Buy)
-                    Deals.Add(new Deal(item.Amount, item.Price, OrderType.Buy));
-                else
-                    Deals.Add(new Deal(item.Amount, item.Price, OrderType.Sell));
-            }
+            if (orderType == OrderType.Buy)
+                Deals.AddRange(prices.Select(x => new Deal(x.Price, x.Amount, OrderType.Buy)));
+            else
+                Deals.AddRange(prices.Select(x => new Deal(x.Price, x.Amount, OrderType.Sell)));
 
             if (takes != null)
-                foreach (var item in takes)
-                {
-                    Deals.Add(new Deal(item.Amount, item.Price, OrderType.Sell));
-                }
+                Deals.AddRange(takes.Select(x => new Deal(x.Price, x.Amount, OrderType.Sell)));
 
             if (stops != null)
-                foreach (var item in stops)
-                {
-                    Deals.Add(new Deal(item.Amount, item.Price, OrderType.Sell));
-                }
+                Deals.AddRange(stops.Select(x => new Deal(x.Price, x.Amount, OrderType.Sell)));
         }
     }
 }
