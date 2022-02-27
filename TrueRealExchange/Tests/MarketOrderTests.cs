@@ -7,16 +7,16 @@ namespace TrueRealExchange
     [TestFixture]
     public class MarketOrderTests
     {
-        private FakePriceGenerator _fakePrice;
-        private Exchange _exchange;
+        private FakePriceGenerator fakePrice;
+        private Exchange exchange;
         //private Account acc1;
 
         [SetUp]
         public void SetUp()
         {
-            _fakePrice = new FakePriceGenerator();
-            _exchange = new Exchange(_fakePrice);
-            _fakePrice.prices = new Dictionary<string, decimal>();
+            fakePrice = new FakePriceGenerator();
+            exchange = new Exchange(fakePrice);
+            fakePrice.prices = new Dictionary<string, decimal>();
         }
         [Test]
         public void JustBuySomeCoins()
@@ -24,7 +24,7 @@ namespace TrueRealExchange
             //ToDo починить списывание деняк
             var account = exchange.CreateAccount("юджин", "шоколадные монетки", 2000);
             var buy = new List<Deal>() { new Deal(10,100) };
-            var order = account.CreateOrder(OrderType.Buy, "шоколадные монетки", buy);
+            var order = account.PostMarketOrder(OrderType.Buy, "шоколадные монетки", buy);
             fakePrice.prices["шоколадные монетки"] = 9m;
             exchange.UpdateStates();
             fakePrice.prices["шоколадные монетки"] = 10m;
@@ -40,14 +40,13 @@ namespace TrueRealExchange
         [Test]
         public void BuySomeCoinsWhenNotEnoughMoneys()
         {
-            //ToDo починить списывание деняк
             var startBalance = 200m;
             var tickerName = "шоколадные монетки";
             var buy = new List<Deal>() { new Deal(10, 100) };
             Assert.Catch(
                 delegate {
                     var account = exchange.CreateAccount("юджин", tickerName, startBalance);
-                    var order = account.CreateOrder(OrderType.Buy, tickerName, buy);
+                    var order = account.PostMarketOrder(OrderType.Buy, tickerName, buy);
                 });
             var priceGoals = new List<decimal>() { 9m, 10m, 11m, 8m };
             MovePrice(priceGoals, tickerName);
@@ -56,7 +55,6 @@ namespace TrueRealExchange
         [Test]
         public void BuySomeCoinsWhenPriceHasNotReached()
         {
-            //ToDo починить списывание деняк
             var startBalance = 2000m;
             var tickerName = "шоколадные монетки";
             var account = exchange.CreateAccount("юджин", tickerName, startBalance);
@@ -72,7 +70,6 @@ namespace TrueRealExchange
         [Test]
         public void BuySomeCoinsAndSellAllByTakes()
         {
-            //ToDo починить списывание деняк
             var startBalance = 2000m;
             var tickerName = "шоколадные монетки";
             var account = exchange.CreateAccount("юджин", tickerName, startBalance);
@@ -88,7 +85,6 @@ namespace TrueRealExchange
         [Test]
         public void BuySomeCoinsAndSellPartByTakes()
         {
-            //ToDo починить списывание деняк
             var startBalance = 2000m;
             var tickerName = "шоколадные монетки";
             var account = exchange.CreateAccount("юджин", tickerName, startBalance);
@@ -105,7 +101,6 @@ namespace TrueRealExchange
         [Test]
         public void BuySomeCoinsAndSellPartByStop()
         {
-            //ToDo починить списывание деняк
             var startBalance = 2000m;
             var tickerName = "шоколадные монетки";
             var account = exchange.CreateAccount("юджин", tickerName, startBalance);
@@ -123,9 +118,9 @@ namespace TrueRealExchange
         public void BuySomeCoinsAndSellAllByStop()
         {
             //ToDo починить списывание деняк
-            const decimal startBalance = 2000m;
-            const string tickerName = "шоколадные монетки";
-            var account = _exchange.CreateAccount("юджин", tickerName, startBalance);
+            var startBalance = 2000m;
+            var tickerName = "шоколадные монетки";
+            var account = exchange.CreateAccount("юджин", tickerName, startBalance);
             var buy = new List<Deal>() { new Deal(10, 100) };
             var stop = new List<Deal>() { new Deal(9, 25), new Deal(8.5m, 75) };
             var order = account.PostMarketOrder(OrderType.Buy, tickerName, buy, null, stop);
@@ -163,7 +158,7 @@ namespace TrueRealExchange
             Assert.Catch(
                 delegate {
                     var account = exchange.CreateAccount("юджин", tickerName, startBalance);
-                    var order = account.CreateOrder(OrderType.Buy, tickerName, buy);
+                    var order = account.PostMarketOrder(OrderType.Buy, tickerName, buy);
             });
             var priceGoals = new List<decimal>() { 9m, 10m, 11m, 8m };
             MovePrice(priceGoals, tickerName);
@@ -173,8 +168,8 @@ namespace TrueRealExchange
         {
             foreach (var price in priceGoals)
             {
-                _fakePrice.prices[tickerName] = price;
-                _exchange.UpdateStates();
+                fakePrice.prices[tickerName] = price;
+                exchange.UpdateStates();
             }
         }
     }
