@@ -33,12 +33,13 @@ namespace TrueRealExchange.Orders
                             {
                                 var TotalSpend = AveragePrice * Amount;
                                 var priceOfSell = deal.Amount * deal.Price;
-                                var priceOfBuy = deal.Amount * TotalSpend / Amount;
+                                var priceOfBuy = deal.Amount * AveragePrice;
                                 var delta = priceOfSell - priceOfBuy;
+                                owner.AddMoney(AveragePrice*deal.Amount / Leverage);
                                 if (delta > 0)
-                                    owner.AddMoney(TotalSpend / Amount / Leverage + delta);
+                                    owner.AddMoney(delta);
                                 else
-                                    owner.RemoveMoney(TotalSpend / Amount / Leverage - delta);
+                                    owner.RemoveMoney(delta);
                                 Amount -= deal.Amount;
                             }
                             break;
