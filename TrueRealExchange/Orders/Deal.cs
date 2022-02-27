@@ -21,6 +21,11 @@ namespace TrueRealExchange
             Amount = amount;
             OrderType = orderType;
         }
+
+        public override string ToString()
+        {
+            return $"{OrderType} {Amount} coins for {Price} every";
+        }
     }
 
     public enum OrderType

@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TrueRealExchange
 {
@@ -32,11 +33,13 @@ namespace TrueRealExchange
         internal void RemoveMoney(decimal v)
         {
             Amount -= v;
+            BalanceHistory.Add(Amount);
         }
 
         internal void AddMoney(decimal v)
         {
             Amount += v;
+            BalanceHistory.Add(Amount);
         }
 
         public void SellCoins(Guid orderID)
@@ -55,9 +58,8 @@ namespace TrueRealExchange
         internal void DataReceiver(Dictionary<string, decimal> prices)
         {
             foreach (var price in prices)
-                foreach (var order in Orders.Values)
-                    if (order.Pair == price.Key)
-                        order.Update(price.Value);
+                foreach (var order in Orders.Values.Where(x => x.Pair == price.Key))
+                    order.UpdateStatusOfOrder(price.Value);
         }
     }
 }

@@ -10,9 +10,9 @@ namespace TrueRealExchange.Orders
         private const decimal feeFactor = 1.002m;
         private decimal liquidationPrice;
 
-        public override void Update(decimal price)
+        public override void UpdateStatusOfOrder(decimal price)
         {
-            if (Status == Status.Close)
+            if (Status == Status.Close || lastPrice == 0)
                 return;
             if (liquidationPrice != 0 && liquidationPrice <= price)
             {
@@ -22,56 +22,56 @@ namespace TrueRealExchange.Orders
             }
             else
             {
-                foreach (var deal in Deals)
-                {
-                    if (deal.Status == Status.Close)
-                        continue;
-                    if (IsPriceCrossedLevel(deal, price))
-                    {
-                        deal.Status = Status.Close;
-                        switch (deal.OrderType)
-                        {
-                            case OrderType.Buy:
-                                {
-                                    liquidationPrice = (TotalSpend - TotalSpend / Leverage) / Amount * feeFactor;
-
-                                    Amount += deal.Amount;
-                                    owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
-                                    TotalSpend += deal.Amount * deal.Price;
-
-
-                                    var priceOfSell = deal.Amount * TotalSpend / Amount;
-                                    var priceOfBuy = deal.Price;
-                                    var delta = priceOfSell - priceOfBuy;
-                                    owner.AddMoney(TotalSpend / Amount / Leverage);
-                                    if (delta > 0)
-                                        owner.AddMoney(delta);
-                                    else
-                                        owner.RemoveMoney(delta);
-                                    Amount -= deal.Amount;
-                                    break;
-                                }
-                            //case OrderType.Sell:
-                            //    {
-                            //        var priceOfSell = deal.Amount * deal.Price;
-                            //        var priceOfBuy = deal.Amount * TotalSpend / Amount;
-                            //        var delta = priceOfSell - priceOfBuy;
-                            //        owner.AddMoney(TotalSpend / Amount / Leverage);
-                            //        if (delta > 0)
-                            //            owner.AddMoney(delta);
-                            //        else
-                            //            owner.RemoveMoney(delta);
-                            //        Amount -= deal.Amount;
-                            //        break;
-
-                            //    }
-                            default:
-                                throw new NotImplementedException();
-                        }
-                    }
-                }
+                UpdateStatusOfDeals(EntryDeals, price);
+                UpdateStatusOfDeals(TakeDeals, price);
+                UpdateStatusOfDeals(StopDeals, price);
             }
             lastPrice = price;
+        }
+        public void UpdateStatusOfDeals(List<Deal> deals, decimal price)
+        {
+            foreach (var deal in deals.Where(x => x.Status == Status.Open)
+                                    .Where(x => IsPriceCrossedLevel(x, price)))
+            {
+                switch (deal.OrderType)
+                {
+                    case OrderType.Buy:
+                        {
+                            liquidationPrice = (TotalSpend - TotalSpend / Leverage) / Amount * feeFactor;
+                            Amount += deal.Amount;
+                            owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
+                            TotalSpend += deal.Amount * deal.Price;
+                            var priceOfSell = deal.Amount * TotalSpend / Amount;
+                            var priceOfBuy = deal.Price;
+                            var delta = priceOfSell - priceOfBuy;
+                            owner.AddMoney(TotalSpend / Amount / Leverage);
+                            if (delta > 0)
+                                owner.AddMoney(delta);
+                            else
+                                owner.RemoveMoney(delta);
+                            Amount -= deal.Amount;
+                            break;
+                        }
+                    //case OrderType.Sell:
+                    //    {
+                    //        var priceOfSell = deal.Amount * deal.Price;
+                    //        var priceOfBuy = deal.Amount * TotalSpend / Amount;
+                    //        var delta = priceOfSell - priceOfBuy;
+                    //        owner.AddMoney(TotalSpend / Amount / Leverage);
+                    //        if (delta > 0)
+                    //            owner.AddMoney(delta);
+                    //        else
+                    //            owner.RemoveMoney(delta);
+                    //        Amount -= deal.Amount;
+                    //        break;
+                    //    }
+                    default:
+                        throw new NotImplementedException();
+                }
+                deal.Status = Status.Close;
+                if (deals.All(x => x.Status == Status.Close))
+                    Status = Status.Close;
+            }
         }
 
         FuturesOrderShort(Account owner, string pair, List<Deal> prices, decimal leverage,
@@ -90,13 +90,13 @@ namespace TrueRealExchange.Orders
             Status = Status.Open;
             //TODO сразу можно цену ликвидации посчитать
 
-            Deals.AddRange(prices.Select(x => new Deal(x.Price, x.Amount, OrderType.Sell)));
+            EntryDeals.AddRange(prices.Select(x => new Deal(x.Price, x.Amount, OrderType.Sell)));
 
             if (takes != null)
-                Deals.AddRange(takes.Select(x => new Deal(x.Price, x.Amount, OrderType.Buy)));
+                TakeDeals.AddRange(takes.Select(x => new Deal(x.Price, x.Amount, OrderType.Buy)));
 
             if (stops != null)
-                Deals.AddRange(stops.Select(x => new Deal(x.Price, x.Amount, OrderType.Buy)));
+                StopDeals.AddRange(stops.Select(x => new Deal(x.Price, x.Amount, OrderType.Buy)));
         }
     }
 }
