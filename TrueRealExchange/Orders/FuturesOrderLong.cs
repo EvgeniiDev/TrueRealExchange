@@ -39,7 +39,7 @@ namespace TrueRealExchange.Orders
                                 if (delta > 0)
                                     owner.AddMoney(delta);
                                 else
-                                    owner.RemoveMoney(delta);
+                                    owner.RemoveMoney(-delta);
                                 Amount -= deal.Amount;
                             }
                             break;
