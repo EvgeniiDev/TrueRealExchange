@@ -48,6 +48,10 @@ namespace TrueRealExchange
                 || price <= StopDeals.Select(x => x.Price).Min()))
                 Status = Status.Close;
 
+            if (Amount == 0 && EntryDeals.All(x => x.Status == Status.Close))
+                Status = Status.Close;
+
+
             lastPrice = price;
         }
         public virtual void UpdateStatusOfDeals(List<Deal> deals, decimal price)

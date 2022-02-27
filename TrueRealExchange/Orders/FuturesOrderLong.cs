@@ -18,11 +18,9 @@ namespace TrueRealExchange.Orders
                 {
                     case OrderType.Buy:
                         {
-                            ;
                             AveragePrice += (AveragePrice * Amount + deal.Amount * deal.Price) / (Amount + deal.Amount);
                             Amount += deal.Amount;
                             owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
-                            ;
                             var TotalSpend = AveragePrice * Amount;
                             liquidationPrice = (TotalSpend - TotalSpend / Leverage) / Amount * feeFactor;
                             break;
@@ -31,16 +29,15 @@ namespace TrueRealExchange.Orders
                         {
                             if (Amount > 0)
                             {
-                                var TotalSpend = AveragePrice * Amount;
                                 var priceOfSell = deal.Amount * deal.Price;
                                 var priceOfBuy = deal.Amount * AveragePrice;
                                 var delta = priceOfSell - priceOfBuy;
-                                owner.AddMoney(AveragePrice*deal.Amount / Leverage);
+                                Amount -= deal.Amount;
+                                owner.AddMoney(AveragePrice * deal.Amount / Leverage);
                                 if (delta > 0)
                                     owner.AddMoney(delta);
                                 else
                                     owner.RemoveMoney(-delta);
-                                Amount -= deal.Amount;
                             }
                             break;
                         }
