@@ -9,56 +9,68 @@ namespace TrueRealExchange.Orders
         private decimal Leverage { get; set; }
         private const decimal feeFactor = 1.002m;
 
-        public override void UpdateStatusOfDeals(List<Deal> deals, decimal price)
+        protected override void UpdateStatusOfDeals(List<Deal> deals, decimal price)
         {
             foreach (var deal in deals.Where(x => x.Status == Status.Open)
-                                    .Where(x => IsPriceCrossedLevel(x, price)))
+                         .Where(x => IsPriceCrossedLevel(x, price)))
             {
                 switch (deal.OrderType)
                 {
                     case OrderType.Buy:
-                        {
-                            AveragePrice += (AveragePrice * Amount + deal.Amount * deal.Price) / (Amount + deal.Amount);
-                            Amount += deal.Amount;
-                            owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
-                            var TotalSpend = AveragePrice * Amount;
-                            liquidationPrice = (TotalSpend - TotalSpend / Leverage) / Amount * feeFactor;
-                            break;
-                        }
+                    {
+                        Buy(deal);
+                        break;
+                    }
                     case OrderType.Sell:
-                        {
-                            if (Amount > 0)
-                            {
-                                var amount = deal.Amount <= Amount ? deal.Amount : Amount;
-                                var priceOfSell = amount * deal.Price;
-                                var priceOfBuy = amount * AveragePrice;
-                                var delta = priceOfSell - priceOfBuy;
-                                Amount -= amount;
-                                owner.AddMoney(AveragePrice * amount / Leverage);
-                                if (delta > 0)
-                                    owner.AddMoney(delta);
-                                else
-                                    owner.RemoveMoney(-delta);
-                            }
-                            break;
-                        }
+                    {
+                        Sell(deal);
+                        break;
+                    }
+                    case OrderType.Long:
+                    case OrderType.Short:
                     default:
                         throw new NotImplementedException();
                 }
+
                 deal.Status = Status.Close;
             }
         }
 
+        public override void Buy(Deal deal)
+        {
+            AveragePrice += (AveragePrice * Amount + deal.Amount * deal.Price) / (Amount + deal.Amount);
+            Amount += deal.Amount;
+            owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
+            var totalSpend = AveragePrice * Amount;
+            LiquidationPrice = (totalSpend - totalSpend / Leverage) / Amount * feeFactor;
+        }
+
+        public override void Sell(Deal deal)
+        {
+            if (Amount <= 0) return;
+            
+            var amount = deal.Amount <= Amount ? deal.Amount : Amount;
+            var priceOfSell = amount * deal.Price;
+            var priceOfBuy = amount * AveragePrice;
+            var delta = priceOfSell - priceOfBuy;
+            
+            Amount -= amount;
+            owner.AddMoney(AveragePrice * amount / Leverage);
+            if (delta > 0)
+                owner.AddMoney(delta);
+            else
+                owner.RemoveMoney(-delta);
+        }
 
         public FuturesOrderLong(Account owner, string pair, List<Deal> prices, decimal leverage,
-                        List<Deal> takes = null, List<Deal> stops = null)
+            List<Deal> takes = null, List<Deal> stops = null)
         {
             if (owner.Amount * leverage < prices.Select(x => x.Amount * x.Price).Sum())
-                throw new Exception("No money");
+                throw new Exception("Not enough money");
 
             if (!IsPositive(prices) || takes != null && !IsPositive(takes)
                                     || stops != null && !IsPositive(stops))
-                throw new Exception("Not correct input");
+                throw new Exception("Incorrect input");
 
             this.owner = owner;
             Pair = pair;

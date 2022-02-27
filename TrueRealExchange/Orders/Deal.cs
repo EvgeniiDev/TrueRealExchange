@@ -1,5 +1,5 @@
 ﻿
-namespace TrueRealExchange
+namespace TrueRealExchange.Orders
 {
     public class Deal
     {

@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using TrueRealExchange.Orders;
 
 namespace TrueRealExchange
 {
