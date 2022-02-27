@@ -24,7 +24,7 @@ namespace TrueRealExchange
 
         public override string ToString()
         {
-            return $"{OrderType} {Amount} coins for {Price} every";
+            return $"{OrderType} {Amount} coins for {Price} every ({Status})";
         }
     }
 
@@ -32,8 +32,8 @@ namespace TrueRealExchange
     {
         Buy,
         Sell,
-        LiqLong,
-        LiqShort,
+        Long,
+        Short,
     }
 
     public enum Status

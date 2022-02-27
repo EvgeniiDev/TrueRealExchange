@@ -4,34 +4,10 @@ using System.Linq;
 
 namespace TrueRealExchange
 {
-    public class ClassicOrder : BaseOrder
+    public class MarketOrder : BaseOrder
     {
-        public override void UpdateStatusOfOrder(decimal price)
-        {
-            if (Status == Status.Close)
-                //return;
-                if (lastPrice == 0)
-                {
-                    lastPrice = price;
-                    return;
-                }
 
-            UpdateStatusOfDeals(EntryDeals, price);
-            if (TakeDeals.Count == 0 && StopDeals.Count == 0 && EntryDeals.All(x => x.Status == Status.Close))
-                Status = Status.Close;
-
-            UpdateStatusOfDeals(TakeDeals, price);
-            if (TakeDeals.Count > 0 && TakeDeals.All(x => x.Status == Status.Close))
-                Status = Status.Close;
-
-            UpdateStatusOfDeals(StopDeals, price);
-            if (StopDeals.Count > 0 && StopDeals.All(x => x.Status == Status.Close))
-                Status = Status.Close;
-
-            lastPrice = price;
-        }
-
-        public void UpdateStatusOfDeals(List<Deal> deals, decimal price)
+        public override void UpdateStatusOfDeals(List<Deal> deals, decimal price)
         {
             foreach (var deal in deals.Where(x => x.Status == Status.Open)
                                         .Where(x => IsPriceCrossedLevel(x, price)))
@@ -43,10 +19,6 @@ namespace TrueRealExchange
                         owner.RemoveMoney(deal.Amount * deal.Price);
                         break;
                     case OrderType.Sell:
-                        if (Amount == 0)
-                        {
-                            //throw new Exception("Странное поведение попытка продать что-то, когда еще ничего не купил");
-                        }
                         var amount = deal.Amount <= Amount ? deal.Amount : Amount;
                         Amount -= amount;
                         //Amount -= deal.Amount;
@@ -57,10 +29,9 @@ namespace TrueRealExchange
                 }
                 deal.Status = Status.Close;
             }
-
         }
 
-        public ClassicOrder(OrderType orderType, Account owner, string pair, List<Deal> prices,
+        public MarketOrder(OrderType orderType, Account owner, string pair, List<Deal> prices,
                             List<Deal> takes = null, List<Deal> stops = null)
         {
             if (owner.Amount < prices.Select(x => x.Amount * x.Price).Sum())
@@ -85,6 +56,5 @@ namespace TrueRealExchange
             if (stops != null)
                 StopDeals.AddRange(stops.Select(x => new Deal(x.Price, x.Amount, OrderType.Sell)));
         }
-
     }
 }

@@ -4,31 +4,12 @@ using System.Linq;
 
 namespace TrueRealExchange.Orders
 {
-    class FuturesOrderShort : BaseOrder
+    public class FuturesOrderShort : BaseOrder
     {
         private decimal Leverage { get; set; }
         private const decimal feeFactor = 1.002m;
-        private decimal liquidationPrice;
-
-        public override void UpdateStatusOfOrder(decimal price)
-        {
-            if (Status == Status.Close || lastPrice == 0)
-                return;
-            if (liquidationPrice != 0 && liquidationPrice <= price)
-            {
-                //Ликвидация позиции
-                Status = Status.Close;
-                //TODO т.к позиция полностью ликвидирована её бы перенести куда-то в другое место мб...
-            }
-            else
-            {
-                UpdateStatusOfDeals(EntryDeals, price);
-                UpdateStatusOfDeals(TakeDeals, price);
-                UpdateStatusOfDeals(StopDeals, price);
-            }
-            lastPrice = price;
-        }
-        public void UpdateStatusOfDeals(List<Deal> deals, decimal price)
+        private decimal TotalSpend = 0;
+        public override void UpdateStatusOfDeals(List<Deal> deals, decimal price)
         {
             foreach (var deal in deals.Where(x => x.Status == Status.Open)
                                     .Where(x => IsPriceCrossedLevel(x, price)))
@@ -69,12 +50,10 @@ namespace TrueRealExchange.Orders
                         throw new NotImplementedException();
                 }
                 deal.Status = Status.Close;
-                if (deals.All(x => x.Status == Status.Close))
-                    Status = Status.Close;
             }
         }
 
-        FuturesOrderShort(Account owner, string pair, List<Deal> prices, decimal leverage,
+        public FuturesOrderShort(Account owner, string pair, List<Deal> prices, decimal leverage,
             List<Deal> takes = null, List<Deal> stops = null)
         {
             if (owner.Amount * leverage < prices.Select(x => x.Amount * x.Price).Sum())

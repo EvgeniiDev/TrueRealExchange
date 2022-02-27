@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TrueRealExchange.Orders;
 
 namespace TrueRealExchange
 {
@@ -21,22 +22,35 @@ namespace TrueRealExchange
             BalanceHistory.Add(startBalance);
         }
 
-        public Guid CreateOrder(OrderType orderType, string pair, List<Deal> prices,
+        public Guid PostMarketOrder(OrderType orderType, string pair, List<Deal> prices,
             List<Deal> takes = null, List<Deal> stops = null)
         {
-            var order = new ClassicOrder(orderType, this, pair, prices, takes, stops);
+            var order = new MarketOrder(orderType, this, pair, prices, takes, stops);
             var guid = new Guid();
             Orders.Add(guid, order);
             return guid;
         }
 
-        internal void RemoveMoney(decimal v)
+        public Guid PostFuturesOrder(OrderType orderType, string pair, decimal leverage, List<Deal> prices,
+                    List<Deal> takes = null, List<Deal> stops = null)
+        {
+            var order = new BaseOrder();
+            if(orderType == OrderType.Long)
+                order = new FuturesOrderLong(this, pair, prices, leverage, takes, stops);
+            else
+                order = new FuturesOrderShort(this, pair, prices, leverage, takes, stops);
+            var guid = new Guid();
+            Orders.Add(guid, order);
+            return guid;
+        }
+
+        public void RemoveMoney(decimal v)
         {
             Amount -= v;
             BalanceHistory.Add(Amount);
         }
 
-        internal void AddMoney(decimal v)
+        public void AddMoney(decimal v)
         {
             Amount += v;
             BalanceHistory.Add(Amount);
