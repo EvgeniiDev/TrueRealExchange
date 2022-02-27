@@ -14,8 +14,7 @@ namespace TrueRealExchange
             {
                 if (deal.Status == Status.Close)
                     continue;
-                if (lastPrice >= price && deal.Price <= lastPrice && deal.Price >= price
-                    || lastPrice <= price && deal.Price >= lastPrice && deal.Price <= price)
+                if (IsPriceCrossedLevel(deal,price))
                 {
                     switch (deal.OrderType)
                     {
@@ -40,6 +39,13 @@ namespace TrueRealExchange
         public ClassicOrder(OrderType orderType, Account owner, string pair, List<Deal> prices,
             List<Deal> takes = null, List<Deal> stops = null)
         {
+            if (owner.Amount < prices.Select(x => x.Amount * x.Price).Sum())
+                throw new Exception("No money");
+
+            if (!IsPositive(prices) || takes != null && !IsPositive(takes)
+                                    || stops != null && !IsPositive(stops))
+                throw new Exception("Not correct input");
+
             this.owner = owner;
             Pair = pair;
             Status = Status.Open;
@@ -55,5 +61,6 @@ namespace TrueRealExchange
             if (stops != null)
                 Deals.AddRange(stops.Select(x => new Deal(x.Price, x.Amount, OrderType.Sell)));
         }
+
     }
 }

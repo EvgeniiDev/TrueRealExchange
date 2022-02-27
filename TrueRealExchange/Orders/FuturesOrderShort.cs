@@ -26,8 +26,7 @@ namespace TrueRealExchange.Orders
                 {
                     if (deal.Status == Status.Close)
                         continue;
-                    if (lastPrice >= price && deal.Price <= lastPrice && deal.Price >= price
-                        || lastPrice <= price && deal.Price >= lastPrice && deal.Price <= price)
+                    if (IsPriceCrossedLevel(deal, price))
                     {
                         deal.Status = Status.Close;
                         switch (deal.OrderType)
@@ -98,13 +97,6 @@ namespace TrueRealExchange.Orders
 
             if (stops != null)
                 Deals.AddRange(stops.Select(x => new Deal(x.Price, x.Amount, OrderType.Buy)));
-        }
-
-        private static bool IsPositive(List<Deal> dictionary)
-        {
-            if (dictionary == null) throw new ArgumentNullException(nameof(dictionary));
-            return dictionary.All(x => x.Amount >= 0)
-                   && dictionary.All(x => x.Price >= 0);
         }
     }
 }

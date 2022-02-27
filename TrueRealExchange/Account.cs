@@ -55,13 +55,9 @@ namespace TrueRealExchange
         internal void DataReceiver(Dictionary<string, decimal> prices)
         {
             foreach (var price in prices)
-            {
                 foreach (var order in Orders.Values)
-                {
                     if (order.Pair == price.Key)
                         order.Update(price.Value);
-                }
-            }
         }
     }
 }
