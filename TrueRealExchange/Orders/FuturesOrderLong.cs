@@ -29,11 +29,12 @@ namespace TrueRealExchange.Orders
                         {
                             if (Amount > 0)
                             {
-                                var priceOfSell = deal.Amount * deal.Price;
-                                var priceOfBuy = deal.Amount * AveragePrice;
+                                var amount = deal.Amount <= Amount ? deal.Amount : Amount;
+                                var priceOfSell = amount * deal.Price;
+                                var priceOfBuy = amount * AveragePrice;
                                 var delta = priceOfSell - priceOfBuy;
-                                Amount -= deal.Amount;
-                                owner.AddMoney(AveragePrice * deal.Amount / Leverage);
+                                Amount -= amount;
+                                owner.AddMoney(AveragePrice * amount / Leverage);
                                 if (delta > 0)
                                     owner.AddMoney(delta);
                                 else
