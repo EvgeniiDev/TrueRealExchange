@@ -22,10 +22,11 @@ namespace TrueRealExchange
         {
             if (Status == Status.Close)
                 return;
-            if (liquidationPrice != 0 && liquidationPrice <= price)
+            if (liquidationPrice != 0 && liquidationPrice >= price)
             {
                 //Ликвидация позиции
                 Status = Status.Close;
+                Amount = 0;
                 //TODO т.к позиция полностью ликвидирована её бы перенести куда-то в другое место мб...
             }
             if (lastPrice == 0)
@@ -35,18 +36,8 @@ namespace TrueRealExchange
             }
 
             UpdateStatusOfDeals(EntryDeals, price);
-            if (TakeDeals.Count == 0 && StopDeals.Count == 0 && EntryDeals.All(x => x.Status == Status.Close))
-                Status = Status.Close;
-
             UpdateStatusOfDeals(TakeDeals, price);
-            if (Amount == 0 && TakeDeals.Count > 0 && TakeDeals.All(x => x.Status == Status.Close))
-                Status = Status.Close;
-
             UpdateStatusOfDeals(StopDeals, price);
-            if (Amount == 0 && StopDeals.Count > 0 &&
-                (StopDeals.All(x => x.Status == Status.Close)
-                || price <= StopDeals.Select(x => x.Price).Min()))
-                Status = Status.Close;
 
             if (Amount == 0 && EntryDeals.All(x => x.Status == Status.Close))
                 Status = Status.Close;
