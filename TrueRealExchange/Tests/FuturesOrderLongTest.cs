@@ -103,7 +103,22 @@ namespace TrueRealExchange
             Assert.AreEqual(75m, account.Orders[order].Amount);
             Assert.AreEqual(startBalance - 10 * 100 + 11 * 25, account.Amount);
         }
-
+        [Test]
+        public void BuySomeCoinsByFourEntryAndSellByThree()
+        {
+            var startBalance = 3000m;
+            var tickerName = "шоколадные монетки";
+            var leverage = 1;
+            var account = exchange.CreateAccount("юджин", tickerName, startBalance);
+            var buy = new List<Deal>() { new Deal(9, 50), new Deal(10, 25), new Deal(11, 100), new Deal(11.5m, 100) };
+            var take = new List<Deal>() { new Deal(13, 125), new Deal(15, 150), };
+            var order = account.PostFuturesOrder(OrderType.Long, tickerName, leverage, buy, take);
+            var priceGoals = new List<decimal>() { 9m, 10m, 11m, 14m, 19m };
+            MovePrice(priceGoals, tickerName);
+            Assert.AreEqual(Status.Close, account.Orders[order].Status);
+            Assert.AreEqual(0, account.Orders[order].Amount);
+            Assert.AreEqual(startBalance - 2950 + 3875, account.Amount);
+        }
         [Test]
         public void BuySomeCoinsAndSellPartByStop()
         {
@@ -236,6 +251,7 @@ namespace TrueRealExchange
             Assert.AreEqual(0, account.Orders[order].Amount);
             Assert.AreEqual(startBalance + 1.5m * 25 + 4.5m * 75, account.Amount);
         }
+
         private void MovePrice(List<decimal> priceGoals, string tickerName)
         {
             foreach (var price in priceGoals)

@@ -8,7 +8,34 @@ namespace TrueRealExchange.Orders
     {
         private decimal Leverage { get; set; }
         private const decimal feeFactor = 1.002m;
-        private decimal TotalSpend = 0;
+
+        public override void UpdateStatusOfOrder(decimal price)
+        {
+            if (lastPrice == 0)
+            {
+                UpdateLastPrice(price);
+                return;
+            }
+            UpdateAllDeals(price);
+
+            if (Amount == 0 && EntryDeals.All(x => x.Status == Status.Close))
+                CloseOrder();
+
+            if (LiquidationPrice <= price)
+            {
+                //Liquidation
+                CloseOrder();
+                Amount = 0;
+            }
+            UpdateLastPrice(price);
+        }
+
+        public override void UpdateAllDeals(decimal price)
+        {
+
+            UpdateStatusOfDeals(TakeDeals, price);
+            UpdateStatusOfDeals(StopDeals, price);
+        }
 
         protected override void UpdateStatusOfDeals(List<Deal> deals, decimal price)
         {
@@ -20,49 +47,39 @@ namespace TrueRealExchange.Orders
                     case OrderType.Buy:
                         {
                             Buy(deal);
-                            break;
-                        }
-                    case OrderType.Sell:
-                        {
-                            Sell(deal);
+                            foreach (var _deal in EntryDeals.Where(x => x.Status == Status.Open))
+                            {
+                                Sell(_deal);
+                                if(_deal.Amount==0)
+                                    _deal.Status = Status.Close;
+                            }
                             break;
                         }
                     default:
                         throw new NotImplementedException();
                 }
-
                 deal.Status = Status.Close;
             }
         }
 
         public override void Buy(Deal deal)
         {
-            LiquidationPrice = (TotalSpend - TotalSpend / Leverage) / Amount * feeFactor;
-            Amount += deal.Amount;
-            owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
-            TotalSpend += deal.Amount * deal.Price;
-            var priceOfSell = deal.Amount * TotalSpend / Amount;
-            var priceOfBuy = deal.Price;
-            var delta = priceOfSell - priceOfBuy;
-            owner.AddMoney(TotalSpend / Amount / Leverage);
-            if (delta > 0)
-                owner.AddMoney(delta);
-            else
-                owner.RemoveMoney(delta);
-            Amount -= deal.Amount;
+                AveragePrice = (AveragePrice * Amount + deal.Amount * deal.Price) / (Amount + deal.Amount);
+                Amount += deal.Amount;
+                Balance -= deal.Amount * deal.Price / Leverage;
         }
 
         public override void Sell(Deal deal)
         {
-            var priceOfSell = deal.Amount * deal.Price;
-            var priceOfBuy = deal.Amount * TotalSpend / Amount;
+            var totalSpend = AveragePrice * Amount;
+            var amount = Math.Min(deal.Amount, Amount);
+            deal.Amount -= amount;
+            Amount -= amount;
+            var priceOfSell = amount * deal.Price;
+            var priceOfBuy = amount * AveragePrice;
             var delta = priceOfSell - priceOfBuy;
-            owner.AddMoney(TotalSpend / Amount / Leverage);
-            if (delta > 0)
-                owner.AddMoney(delta);
-            else
-                owner.RemoveMoney(delta);
-            Amount -= deal.Amount;
+            //LiquidationPrice = (totalSpend - totalSpend / Leverage) / Amount * feeFactor;
+            Balance += AveragePrice * amount / Leverage + delta;
         }
 
         public FuturesOrderShort(Account owner, string pair, List<Deal> prices, decimal leverage,
@@ -79,8 +96,10 @@ namespace TrueRealExchange.Orders
             Pair = pair;
             Leverage = leverage;
             Status = Status.Open;
-            //TODO сразу можно цену ликвидации посчитать
-
+            LiquidationPrice = decimal.MaxValue;
+            var balance = prices.Select(x => x.Price * x.Amount).Sum();
+            Balance = balance;
+            owner.RemoveMoney(balance);
             EntryDeals.AddRange(prices.Select(x => new Deal(x.Price, x.Amount, OrderType.Sell)));
 
             if (takes != null)

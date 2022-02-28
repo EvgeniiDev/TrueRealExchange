@@ -10,14 +10,15 @@ namespace TrueRealExchange.Orders
         public decimal Amount;
         protected decimal AveragePrice;
         public string Pair;
-        protected List<Deal> TakeDeals = new();
-        protected List<Deal> StopDeals = new();
+        public List<Deal> TakeDeals = new();
+        public List<Deal> StopDeals = new();
         public List<Deal> EntryDeals = new();
-        private decimal lastPrice;
+        public decimal lastPrice;
         public Status Status;
         protected decimal LiquidationPrice;
+        public decimal Balance;
 
-        public void UpdateStatusOfOrder(decimal price)
+        public virtual void UpdateStatusOfOrder(decimal price)
         {
             if (lastPrice == 0)
             {
@@ -38,13 +39,20 @@ namespace TrueRealExchange.Orders
             UpdateLastPrice(price);
         }
 
-        private void UpdateAllDeals(decimal price)
+        public virtual void UpdateAllDeals(decimal price)
         {
             UpdateStatusOfDeals(EntryDeals, price);
             UpdateStatusOfDeals(TakeDeals, price);
             UpdateStatusOfDeals(StopDeals, price);
         }
-
+        public void CloseOrder()
+        {
+            if(Balance>=0)
+                owner.AddMoney(Balance);
+            else
+                owner.RemoveMoney(Balance);
+            Status = Status.Close;
+        }
         protected virtual void UpdateStatusOfDeals(List<Deal> deals, decimal price)
         {
             throw new NotImplementedException();
@@ -63,14 +71,9 @@ namespace TrueRealExchange.Orders
                    && dictionary.All(x => x.Price >= 0);
         }
 
-        private void UpdateLastPrice(decimal price)
+        public void UpdateLastPrice(decimal price)
         {
             lastPrice = price;
-        }
-
-        private void CloseOrder()
-        {
-            Status = Status.Close;
         }
 
         public virtual void Buy(Deal deal)
