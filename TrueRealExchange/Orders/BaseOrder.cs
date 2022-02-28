@@ -2,64 +2,93 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TrueRealExchange
+namespace TrueRealExchange.Orders
 {
     public class BaseOrder
     {
-        public Account owner;
+        protected Account owner;
         public decimal Amount;
-        public decimal AveragePrice;
+        protected decimal AveragePrice;
         public string Pair;
-        public List<Deal> TakeDeals = new();
-        public List<Deal> StopDeals = new();
+        protected List<Deal> TakeDeals = new();
+        protected List<Deal> StopDeals = new();
         public List<Deal> EntryDeals = new();
-        public decimal lastPrice;
+        private decimal lastPrice;
         public Status Status;
-        public decimal liquidationPrice;
-        //TODO у нас все ордера хранятся в одном листе, и открытые и уже закрытые... и когда приходит новая инфа по цене метод апдейт для всех вызывается...
+
+        protected decimal LiquidationPrice;
 
         public void UpdateStatusOfOrder(decimal price)
         {
-            if (Status == Status.Close)
-                return;
-            if (liquidationPrice != 0 && liquidationPrice >= price)
-            {
-                //Ликвидация позиции
-                Status = Status.Close;
-                Amount = 0;
-                //TODO т.к позиция полностью ликвидирована её бы перенести куда-то в другое место мб...
-            }
             if (lastPrice == 0)
             {
-                lastPrice = price;
+                UpdateLastPrice(price);
                 return;
             }
 
             UpdateStatusOfDeals(EntryDeals, price);
+            if (TakeDeals.Count == 0 && StopDeals.Count == 0 && EntryDeals.All(x => x.Status == Status.Close))
+                Status = Status.Close;
+
             UpdateStatusOfDeals(TakeDeals, price);
+            if (Amount == 0 && TakeDeals.Count > 0 && TakeDeals.All(x => x.Status == Status.Close))
+                Status = Status.Close;
+
             UpdateStatusOfDeals(StopDeals, price);
+            if (Amount == 0 && StopDeals.Count > 0 &&
+                (StopDeals.All(x => x.Status == Status.Close)
+                || price <= StopDeals.Select(x => x.Price).Min()))
+                Status = Status.Close;
 
             if (Amount == 0 && EntryDeals.All(x => x.Status == Status.Close))
                 Status = Status.Close;
 
-
-            lastPrice = price;
+            UpdateLastPrice(price);
         }
-        public virtual void UpdateStatusOfDeals(List<Deal> deals, decimal price)
+
+        private void UpdateAllDeals(decimal price)
+        {
+            UpdateStatusOfDeals(EntryDeals, price);
+            UpdateStatusOfDeals(TakeDeals, price);
+            UpdateStatusOfDeals(StopDeals, price);
+        }
+
+        protected virtual void UpdateStatusOfDeals(List<Deal> deals, decimal price)
         {
             throw new NotImplementedException();
         }
-        public bool IsPriceCrossedLevel(Deal deal, decimal price)
+
+        protected bool IsPriceCrossedLevel(Deal deal, decimal price)
         {
             return lastPrice >= price && deal.Price <= lastPrice && deal.Price >= price
-                    || lastPrice <= price && deal.Price >= lastPrice && deal.Price <= price;
+                   || lastPrice <= price && deal.Price >= lastPrice && deal.Price <= price;
         }
 
-        public static bool IsPositive(List<Deal> dictionary)
+        protected static bool IsPositive(List<Deal> dictionary)
         {
             if (dictionary == null) throw new ArgumentNullException(nameof(dictionary));
             return dictionary.All(x => x.Amount >= 0)
                    && dictionary.All(x => x.Price >= 0);
+        }
+
+        private void UpdateLastPrice(decimal price)
+        {
+            lastPrice = price;
+        }
+
+        private void CloseOrder()
+        {
+            Status = Status.Close;
+        }
+
+        public virtual void Buy(Deal deal)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void Sell(Deal deal)
+        {
+            throw new NotImplementedException();
         }
     }
 }

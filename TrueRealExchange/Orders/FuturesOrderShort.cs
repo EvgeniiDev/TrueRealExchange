@@ -9,48 +9,60 @@ namespace TrueRealExchange.Orders
         private decimal Leverage { get; set; }
         private const decimal feeFactor = 1.002m;
         private decimal TotalSpend = 0;
-        public override void UpdateStatusOfDeals(List<Deal> deals, decimal price)
+
+        protected override void UpdateStatusOfDeals(List<Deal> deals, decimal price)
         {
             foreach (var deal in deals.Where(x => x.Status == Status.Open)
-                                    .Where(x => IsPriceCrossedLevel(x, price)))
+                         .Where(x => IsPriceCrossedLevel(x, price)))
             {
                 switch (deal.OrderType)
                 {
                     case OrderType.Buy:
-                        {
-                            liquidationPrice = (TotalSpend - TotalSpend / Leverage) / Amount * feeFactor;
-                            Amount += deal.Amount;
-                            owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
-                            TotalSpend += deal.Amount * deal.Price;
-                            var priceOfSell = deal.Amount * TotalSpend / Amount;
-                            var priceOfBuy = deal.Price;
-                            var delta = priceOfSell - priceOfBuy;
-                            owner.AddMoney(TotalSpend / Amount / Leverage);
-                            if (delta > 0)
-                                owner.AddMoney(delta);
-                            else
-                                owner.RemoveMoney(delta);
-                            Amount -= deal.Amount;
-                            break;
-                        }
+                    {
+                        Buy(deal);
+                        break;
+                    }
                     //case OrderType.Sell:
                     //    {
-                    //        var priceOfSell = deal.Amount * deal.Price;
-                    //        var priceOfBuy = deal.Amount * TotalSpend / Amount;
-                    //        var delta = priceOfSell - priceOfBuy;
-                    //        owner.AddMoney(TotalSpend / Amount / Leverage);
-                    //        if (delta > 0)
-                    //            owner.AddMoney(delta);
-                    //        else
-                    //            owner.RemoveMoney(delta);
-                    //        Amount -= deal.Amount;
+                    //        Sell(deal);
                     //        break;
                     //    }
                     default:
                         throw new NotImplementedException();
                 }
+
                 deal.Status = Status.Close;
             }
+        }
+
+        public override void Buy(Deal deal)
+        {
+            LiquidationPrice = (TotalSpend - TotalSpend / Leverage) / Amount * feeFactor;
+            Amount += deal.Amount;
+            owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
+            TotalSpend += deal.Amount * deal.Price;
+            var priceOfSell = deal.Amount * TotalSpend / Amount;
+            var priceOfBuy = deal.Price;
+            var delta = priceOfSell - priceOfBuy;
+            owner.AddMoney(TotalSpend / Amount / Leverage);
+            if (delta > 0)
+                owner.AddMoney(delta);
+            else
+                owner.RemoveMoney(delta);
+            Amount -= deal.Amount;
+        }
+
+        public override void Sell(Deal deal)
+        {
+            var priceOfSell = deal.Amount * deal.Price;
+            var priceOfBuy = deal.Amount * TotalSpend / Amount;
+            var delta = priceOfSell - priceOfBuy;
+            owner.AddMoney(TotalSpend / Amount / Leverage);
+            if (delta > 0)
+                owner.AddMoney(delta);
+            else
+                owner.RemoveMoney(delta);
+            Amount -= deal.Amount;
         }
 
         public FuturesOrderShort(Account owner, string pair, List<Deal> prices, decimal leverage,
