@@ -6,7 +6,7 @@ using TrueRealExchange.Orders;
 namespace TrueRealExchange
 {
     [TestFixture]
-    public class FuturesOrderLongTest
+    public class FuturesOrderShortTest
     {
         private FakePriceGenerator fakePrice;
         private Exchange exchange;
@@ -25,7 +25,7 @@ namespace TrueRealExchange
         {
             var account = exchange.CreateAccount("юджин", "шоколадные монетки", 2000);
             var buy = new List<Deal>() { new Deal(10, 100) };
-            var order = account.PostFuturesOrder(OrderType.Long, "шоколадные монетки", 1, buy);
+            var order = account.PostFuturesOrder(OrderType.Short, "шоколадные монетки", 1, buy);
             fakePrice.prices["шоколадные монетки"] = 9m;
             exchange.UpdateStates();
             fakePrice.prices["шоколадные монетки"] = 10m;
@@ -48,7 +48,7 @@ namespace TrueRealExchange
                 delegate
                 {
                     var account = exchange.CreateAccount("юджин", tickerName, startBalance);
-                    var order = account.PostFuturesOrder(OrderType.Long, "шоколадные монетки", 1, buy);
+                    var order = account.PostFuturesOrder(OrderType.Short, "шоколадные монетки", 1, buy);
                 });
             var priceGoals = new List<decimal>() { 9m, 10m, 11m, 8m };
             MovePrice(priceGoals, tickerName);
@@ -61,7 +61,7 @@ namespace TrueRealExchange
             var tickerName = "шоколадные монетки";
             var account = exchange.CreateAccount("юджин", tickerName, startBalance);
             var buy = new List<Deal>() { new Deal(10, 100) };
-            var order = account.PostFuturesOrder(OrderType.Long, "шоколадные монетки", 1, buy);
+            var order = account.PostFuturesOrder(OrderType.Short, "шоколадные монетки", 1, buy);
             var priceGoals = new List<decimal>() { 9m, 9.9999m };
             MovePrice(priceGoals, tickerName);
             Assert.AreEqual(Status.Open, account.Orders[order].Status);
@@ -79,7 +79,7 @@ namespace TrueRealExchange
             var account = exchange.CreateAccount("юджин", tickerName, startBalance);
             var buy = new List<Deal>() { new Deal(10, 100) };
             var take = new List<Deal>() { new Deal(12, 25), new Deal(15, 75), };
-            var order = account.PostFuturesOrder(OrderType.Long, tickerName, leverage, buy, take);
+            var order = account.PostFuturesOrder(OrderType.Short, tickerName, leverage, buy, take);
             var priceGoals = new List<decimal>() { 9m, 10m, 11m, 20 };
             MovePrice(priceGoals, tickerName);
             Assert.AreEqual(Status.Close, account.Orders[order].Status);
@@ -96,7 +96,7 @@ namespace TrueRealExchange
             var account = exchange.CreateAccount("юджин", tickerName, startBalance);
             var buy = new List<Deal>() { new Deal(10, 100) };
             var take = new List<Deal>() { new Deal(11, 25) };
-            var order = account.PostFuturesOrder(OrderType.Long, tickerName, leverage, buy, take);
+            var order = account.PostFuturesOrder(OrderType.Short, tickerName, leverage, buy, take);
             var priceGoals = new List<decimal>() { 9m, 10m, 11m };
             MovePrice(priceGoals, tickerName);
             Assert.AreEqual(Status.Open, account.Orders[order].Status);
@@ -113,7 +113,7 @@ namespace TrueRealExchange
             var account = exchange.CreateAccount("юджин", tickerName, startBalance);
             var buy = new List<Deal>() { new Deal(10, 100) };
             var stop = new List<Deal>() { new Deal(9, 25) };
-            var order = account.PostFuturesOrder(OrderType.Long, tickerName, leverage, buy, null, stop);
+            var order = account.PostFuturesOrder(OrderType.Short, tickerName, leverage, buy, null, stop);
             var priceGoals = new List<decimal>() { 9m, 10m, 11m, 8m };
             MovePrice(priceGoals, tickerName);
             Assert.AreEqual(Status.Open, account.Orders[order].Status);
@@ -130,7 +130,7 @@ namespace TrueRealExchange
             var account = exchange.CreateAccount("юджин", tickerName, startBalance);
             var buy = new List<Deal>() { new Deal(10, 100) };
             var stop = new List<Deal>() { new Deal(9, 25), new Deal(8.5m, 75) };
-            var order = account.PostFuturesOrder(OrderType.Long, tickerName, leverage, buy, null, stop);
+            var order = account.PostFuturesOrder(OrderType.Short, tickerName, leverage, buy, null, stop);
             var priceGoals = new List<decimal>() { 9.6m, 10m, 11m, 8m };
             MovePrice(priceGoals, tickerName);
             Assert.AreEqual(Status.Close, account.Orders[order].Status);
@@ -147,7 +147,7 @@ namespace TrueRealExchange
             var buy = new List<Deal>() { new Deal(10, 100) };
             var take = new List<Deal>() { new Deal(15, 20), new Deal(17, 30), new Deal(18, 50) };
             var stop = new List<Deal>() { new Deal(9, 25) };
-            var order = account.PostFuturesOrder(OrderType.Long, tickerName, leverage, buy, take, stop);
+            var order = account.PostFuturesOrder(OrderType.Short, tickerName, leverage, buy, take, stop);
             var priceGoals = new List<decimal>() { 9m, 10m, 11m, 8.6m, 17, 9, 20 };
             MovePrice(priceGoals, tickerName);
             Assert.AreEqual(Status.Close, account.Orders[order].Status);
@@ -165,7 +165,7 @@ namespace TrueRealExchange
                 delegate
                 {
                     var account = exchange.CreateAccount("юджин", tickerName, startBalance);
-                    var order = account.PostFuturesOrder(OrderType.Long, tickerName, leverage, buy);
+                    var order = account.PostFuturesOrder(OrderType.Short, tickerName, leverage, buy);
                 });
             var priceGoals = new List<decimal>() { 9m, 10m, 11m, 8m };
             MovePrice(priceGoals, tickerName);
@@ -177,7 +177,7 @@ namespace TrueRealExchange
             var tickerName = "шоколадные монетки";
             var account = exchange.CreateAccount("юджин", tickerName, 2000);
             var buy = new List<Deal>() { new Deal(10, 100) };
-            var order = account.PostFuturesOrder(OrderType.Long, "шоколадные монетки", 10, buy, null, null);
+            var order = account.PostFuturesOrder(OrderType.Short, "шоколадные монетки", 10, buy, null, null);
             var priceGoals = new List<decimal>() { 9m, 10m, 11m, 7m };
             MovePrice(priceGoals, tickerName);
             Assert.AreEqual(Status.Close, account.Orders[order].Status);
@@ -195,7 +195,7 @@ namespace TrueRealExchange
             var account = exchange.CreateAccount("юджин", tickerName, startBalance);
             var buy = new List<Deal>() { new Deal(10, 100) };
             var stop = new List<Deal>() { new Deal(9.5m, 100) };
-            var order = account.PostFuturesOrder(OrderType.Long, tickerName, leverage, buy, null, stop);
+            var order = account.PostFuturesOrder(OrderType.Short, tickerName, leverage, buy, null, stop);
             var priceGoals = new List<decimal>() { 9.6m, 10m, 11m, 8m };
             MovePrice(priceGoals, tickerName);
             Assert.AreEqual(Status.Close, account.Orders[order].Status);
@@ -212,7 +212,7 @@ namespace TrueRealExchange
             var account = exchange.CreateAccount("юджин", tickerName, startBalance);
             var buy = new List<Deal>() { new Deal(10, 100) };
             var take = new List<Deal>() { new Deal(12, 25), new Deal(15, 75), };
-            var order = account.PostFuturesOrder(OrderType.Long, tickerName, leverage, buy, take);
+            var order = account.PostFuturesOrder(OrderType.Short, tickerName, leverage, buy, take);
             var priceGoals = new List<decimal>() { 9m, 10m, 11m, 20 };
             MovePrice(priceGoals, tickerName);
             Assert.AreEqual(Status.Close, account.Orders[order].Status);
@@ -229,7 +229,7 @@ namespace TrueRealExchange
             var account = exchange.CreateAccount("юджин", tickerName, startBalance);
             var buy = new List<Deal>() { new Deal(10, 50), new Deal(11, 50) };
             var take = new List<Deal>() { new Deal(12m, 25), new Deal(15, 75), };
-            var order = account.PostFuturesOrder(OrderType.Long, tickerName, leverage, buy, take);
+            var order = account.PostFuturesOrder(OrderType.Short, tickerName, leverage, buy, take);
             var priceGoals = new List<decimal>() { 9, 10, 11, 20 };
             MovePrice(priceGoals, tickerName);
             Assert.AreEqual(Status.Close, account.Orders[order].Status);

@@ -29,14 +29,13 @@ namespace TrueRealExchange.Orders
                     default:
                         throw new NotImplementedException();
                 }
-
                 deal.Status = Status.Close;
             }
         }
 
         public override void Buy(Deal deal)
         {
-            AveragePrice += (AveragePrice * Amount + deal.Amount * deal.Price) / (Amount + deal.Amount);
+            AveragePrice = (AveragePrice * Amount + deal.Amount * deal.Price) / (Amount + deal.Amount);
             Amount += deal.Amount;
             owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
             var totalSpend = AveragePrice * Amount;
@@ -46,12 +45,10 @@ namespace TrueRealExchange.Orders
         public override void Sell(Deal deal)
         {
             if (Amount <= 0) return;
-            
             var amount = deal.Amount <= Amount ? deal.Amount : Amount;
             var priceOfSell = amount * deal.Price;
             var priceOfBuy = amount * AveragePrice;
             var delta = priceOfSell - priceOfBuy;
-            
             Amount -= amount;
             owner.AddMoney(AveragePrice * amount / Leverage);
             if (delta > 0)

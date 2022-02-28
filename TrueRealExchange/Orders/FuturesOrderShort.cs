@@ -18,15 +18,15 @@ namespace TrueRealExchange.Orders
                 switch (deal.OrderType)
                 {
                     case OrderType.Buy:
-                    {
-                        Buy(deal);
-                        break;
-                    }
-                    //case OrderType.Sell:
-                    //    {
-                    //        Sell(deal);
-                    //        break;
-                    //    }
+                        {
+                            Buy(deal);
+                            break;
+                        }
+                    case OrderType.Sell:
+                        {
+                            Sell(deal);
+                            break;
+                        }
                     default:
                         throw new NotImplementedException();
                 }

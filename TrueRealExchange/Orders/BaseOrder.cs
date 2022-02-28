@@ -15,7 +15,6 @@ namespace TrueRealExchange.Orders
         public List<Deal> EntryDeals = new();
         private decimal lastPrice;
         public Status Status;
-
         protected decimal LiquidationPrice;
 
         public void UpdateStatusOfOrder(decimal price)
@@ -25,24 +24,17 @@ namespace TrueRealExchange.Orders
                 UpdateLastPrice(price);
                 return;
             }
-
-            UpdateStatusOfDeals(EntryDeals, price);
-            if (TakeDeals.Count == 0 && StopDeals.Count == 0 && EntryDeals.All(x => x.Status == Status.Close))
-                Status = Status.Close;
-
-            UpdateStatusOfDeals(TakeDeals, price);
-            if (Amount == 0 && TakeDeals.Count > 0 && TakeDeals.All(x => x.Status == Status.Close))
-                Status = Status.Close;
-
-            UpdateStatusOfDeals(StopDeals, price);
-            if (Amount == 0 && StopDeals.Count > 0 &&
-                (StopDeals.All(x => x.Status == Status.Close)
-                || price <= StopDeals.Select(x => x.Price).Min()))
-                Status = Status.Close;
+            UpdateAllDeals(price);
 
             if (Amount == 0 && EntryDeals.All(x => x.Status == Status.Close))
                 Status = Status.Close;
 
+            if (LiquidationPrice >= price)
+            {
+                //Liquidation
+                Status = Status.Close;
+                Amount = 0;
+            }
             UpdateLastPrice(price);
         }
 
