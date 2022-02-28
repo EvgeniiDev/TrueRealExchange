@@ -26,8 +26,6 @@ namespace TrueRealExchange.Orders
                         Sell(deal);
                         break;
                     }
-                    case OrderType.Long:
-                    case OrderType.Short:
                     default:
                         throw new NotImplementedException();
                 }

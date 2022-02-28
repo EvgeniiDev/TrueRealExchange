@@ -198,7 +198,7 @@ namespace TrueRealExchange
             MovePrice(priceGoals, tickerName);
             Assert.AreEqual(Status.Close, account.Orders[order].Status);
             Assert.AreEqual(0m, account.Orders[order].Amount);
-            Assert.AreEqual(startBalance - 10 * 100 + 9 * 100, account.Amount);
+            Assert.AreEqual(startBalance - 10 * 100 + 9.5m * 100, account.Amount);
         }
 
         [Test]
