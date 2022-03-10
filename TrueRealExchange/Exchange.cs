@@ -4,7 +4,7 @@ namespace TrueRealExchange
 {
     internal class Exchange
     {
-        private List<Account> accounts = new List<Account>();
+        private List<Account> accounts = new();
         readonly IExchange exchange;
 
         public Exchange(IExchange exchange)

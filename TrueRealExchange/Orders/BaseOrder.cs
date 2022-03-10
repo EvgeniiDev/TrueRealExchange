@@ -10,13 +10,15 @@ namespace TrueRealExchange.Orders
         public decimal Amount;
         protected decimal AveragePrice;
         public string Pair;
+        public Status Status;
         public List<Deal> TakeDeals = new();
         public List<Deal> StopDeals = new();
         public List<Deal> EntryDeals = new();
         public decimal lastPrice;
-        public Status Status;
         protected decimal LiquidationPrice;
         public decimal Balance;
+        public decimal StartBalance = 0;
+        public int Leverage = 1;
 
         public virtual void UpdateStatusOfOrder(decimal price)
         {
@@ -47,10 +49,11 @@ namespace TrueRealExchange.Orders
         }
         public void CloseOrder()
         {
-            if(Balance>=0)
-                owner.AddMoney(Balance);
+            var balance = Balance - StartBalance + StartBalance / Leverage;
+            if (balance >= 0)
+                owner.AddMoney(balance);
             else
-                owner.RemoveMoney(Balance);
+                owner.RemoveMoney(balance);
             Status = Status.Close;
         }
         protected virtual void UpdateStatusOfDeals(List<Deal> deals, decimal price)

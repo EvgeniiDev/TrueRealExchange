@@ -6,7 +6,6 @@ namespace TrueRealExchange.Orders
 {
     public class FuturesOrderLong : BaseOrder
     {
-        private decimal Leverage { get; set; }
         private const decimal feeFactor = 1.002m;
 
         protected override void UpdateStatusOfDeals(List<Deal> deals, decimal price)
@@ -57,9 +56,11 @@ namespace TrueRealExchange.Orders
                 owner.RemoveMoney(-delta);
         }
 
-        public FuturesOrderLong(Account owner, string pair, List<Deal> prices, decimal leverage,
+        public FuturesOrderLong(Account owner, string pair, List<Deal> prices, int leverage,
             List<Deal> takes = null, List<Deal> stops = null)
         {
+            if (leverage < 1)
+                throw new Exception("Leverage should be more when 1");
             if (owner.Amount * leverage < prices.Select(x => x.Amount * x.Price).Sum())
                 throw new Exception("Not enough money");
 

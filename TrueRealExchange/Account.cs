@@ -31,7 +31,7 @@ namespace TrueRealExchange
             return guid;
         }
 
-        public Guid PostFuturesOrder(OrderType orderType, string pair, decimal leverage, List<Deal> prices,
+        public Guid PostFuturesOrder(OrderType orderType, string pair, int leverage, List<Deal> prices,
                     List<Deal> takes = null, List<Deal> stops = null)
         {
             var order = new BaseOrder();
@@ -39,7 +39,7 @@ namespace TrueRealExchange
                 order = new FuturesOrderLong(this, pair, prices, leverage, takes, stops);
             else
                 order = new FuturesOrderShort(this, pair, prices, leverage, takes, stops);
-            var guid = new Guid();
+            var guid = Guid.NewGuid();
             Orders.Add(guid, order);
             return guid;
         }
@@ -72,7 +72,8 @@ namespace TrueRealExchange
         internal void DataReceiver(Dictionary<string, decimal> prices)
         {
             foreach (var price in prices)
-                foreach (var order in Orders.Values.Where(x => x.Pair == price.Key))
+                foreach (var order in Orders.Values.Where(x => x.Status == Status.Open)
+                                                    .Where(x => x.Pair == price.Key))
                     order.UpdateStatusOfOrder(price.Value);
         }
     }
