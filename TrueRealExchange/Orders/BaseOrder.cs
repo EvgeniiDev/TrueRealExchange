@@ -29,14 +29,18 @@ namespace TrueRealExchange.Orders
             }
             UpdateAllDeals(price);
 
-            if (Amount == 0 && EntryDeals.All(x => x.Status == Status.Close))
-                Status = Status.Close;
+            if (Math.Abs(Amount) < 10e-4m && EntryDeals.All(x => x.Status == Status.Close))
+            {
+                CloseOrder();
+                return;
+            }
 
             if (LiquidationPrice >= price)
             {
                 //Liquidation
                 Status = Status.Close;
                 Amount = 0;
+                return;
             }
             UpdateLastPrice(price);
         }
@@ -56,9 +60,43 @@ namespace TrueRealExchange.Orders
                 owner.RemoveMoney(balance);
             Status = Status.Close;
         }
-        protected virtual void UpdateStatusOfDeals(List<Deal> deals, decimal price)
+
+        public virtual void UpdateStatusOfDeals(List<Deal> deals, decimal price)
         {
-            throw new NotImplementedException();
+            foreach (var deal in deals.Where(x => x.Status == Status.Open)
+                                        .Where(x => IsPriceCrossedLevel(x, price)))
+            {
+                switch (deal.OrderType)
+                {
+                    case OrderType.Buy:
+                        Buy(deal);
+                        if (deal.Amount == 0)
+                            deal.Status = Status.Close;
+                        break;
+                    case OrderType.Sell:
+                        Sell(deal);
+                        if (deal.Amount == 0)
+                            deal.Status = Status.Close;
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+        }
+        public BaseOrder(Account owner, string pair, List<Deal> entry,
+                                List<Deal> takes = null, List<Deal> stops = null)
+        {
+            if (!IsPositive(entry) || takes != null && !IsPositive(takes)
+                        || stops != null && !IsPositive(stops))
+                throw new Exception("Incorrect input");
+
+            this.owner = owner;
+            Pair = pair;
+            Status = Status.Open;
+        }
+
+        public BaseOrder()
+        {
         }
 
         protected bool IsPriceCrossedLevel(Deal deal, decimal price)

@@ -8,74 +8,50 @@ namespace TrueRealExchange.Orders
     {
         private const decimal feeFactor = 1.002m;
 
-        protected override void UpdateStatusOfDeals(List<Deal> deals, decimal price)
-        {
-            foreach (var deal in deals.Where(x => x.Status == Status.Open)
-                         .Where(x => IsPriceCrossedLevel(x, price)))
-            {
-                switch (deal.OrderType)
-                {
-                    case OrderType.Buy:
-                    {
-                        Buy(deal);
-                        break;
-                    }
-                    case OrderType.Sell:
-                    {
-                        Sell(deal);
-                        break;
-                    }
-                    default:
-                        throw new NotImplementedException();
-                }
-                deal.Status = Status.Close;
-            }
-        }
+       
 
         public override void Buy(Deal deal)
         {
-            AveragePrice = (AveragePrice * Amount + deal.Amount * deal.Price) / (Amount + deal.Amount);
-            Amount += deal.Amount;
-            owner.RemoveMoney(deal.Amount * deal.Price / Leverage);
-            var totalSpend = AveragePrice * Amount;
-            LiquidationPrice = (totalSpend - totalSpend / Leverage) / Amount * feeFactor;
+            var amount = deal.Amount;
+
+            deal.Amount -= amount;
+            AveragePrice = (AveragePrice * Amount + amount * deal.Price) / (Amount + amount);
+            Amount += amount;
+            Balance -= amount * deal.Price;
+            Console.WriteLine(Balance);
+            var totalSpend = Math.Abs(AveragePrice * Amount);
+            if (Math.Abs(Amount) < 0.00001m)
+                LiquidationPrice = decimal.MinValue;
+            else
+                LiquidationPrice = (totalSpend - totalSpend / Leverage) / Math.Abs(Amount) * feeFactor;
         }
 
         public override void Sell(Deal deal)
         {
             if (Amount <= 0) return;
             var amount = deal.Amount <= Amount ? deal.Amount : Amount;
-            var priceOfSell = amount * deal.Price;
-            var priceOfBuy = amount * AveragePrice;
-            var delta = priceOfSell - priceOfBuy;
+            deal.Amount -= amount;
             Amount -= amount;
-            owner.AddMoney(AveragePrice * amount / Leverage);
-            if (delta > 0)
-                owner.AddMoney(delta);
-            else
-                owner.RemoveMoney(-delta);
+            Balance += deal.Price * amount;
         }
 
-        public FuturesOrderLong(Account owner, string pair, List<Deal> prices, int leverage,
+        public FuturesOrderLong(Account owner, string pair, List<Deal> entry, int leverage,
             List<Deal> takes = null, List<Deal> stops = null)
+            : base(owner,pair,entry,takes,stops)
         {
             if (leverage < 1)
                 throw new Exception("Leverage should be more when 1");
-            if (owner.Amount * leverage < prices.Select(x => x.Amount * x.Price).Sum())
+            if (owner.Amount * leverage < entry.Select(x => x.Amount * x.Price).Sum())
                 throw new Exception("Not enough money");
 
-            if (!IsPositive(prices) || takes != null && !IsPositive(takes)
-                                    || stops != null && !IsPositive(stops))
-                throw new Exception("Incorrect input");
-
-            this.owner = owner;
-            Pair = pair;
             Leverage = leverage;
-            Status = Status.Open;
-            //TODO сразу можно цену ликвидации посчитать
 
-            EntryDeals.AddRange(prices.Select(x => new Deal(x.Price, x.Amount, OrderType.Buy)));
+            var totalSum = entry.Sum(x => x.Price * x.Amount);
+            StartBalance = totalSum;
+            Balance = totalSum;
+            owner.RemoveMoney(totalSum / leverage);
 
+            EntryDeals.AddRange(entry.Select(x => new Deal(x.Price, x.Amount, OrderType.Buy)));
             if (takes != null)
                 TakeDeals.AddRange(takes.Select(x => new Deal(x.Price, x.Amount, OrderType.Sell)));
 
