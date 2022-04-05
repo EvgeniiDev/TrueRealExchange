@@ -10,7 +10,7 @@ namespace TrueRealExchange.Orders
 
        
 
-        public override void Buy(Deal deal)
+        protected override void Buy(Deal deal)
         {
             var amount = deal.Amount;
 
@@ -26,7 +26,7 @@ namespace TrueRealExchange.Orders
                 LiquidationPrice = (totalSpend - totalSpend / Leverage) / Math.Abs(Amount) * feeFactor;
         }
 
-        public override void Sell(Deal deal)
+        protected override void Sell(Deal deal)
         {
             if (Amount <= 0) return;
             var amount = deal.Amount <= Amount ? deal.Amount : Amount;

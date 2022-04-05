@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using ExchangeConnectors;
+using System.Collections.Generic;
 
 namespace TrueRealExchange
 {

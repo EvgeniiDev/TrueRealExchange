@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using ExchangeConnectors;
 
 namespace TrueRealExchange
 {
-    internal class Exchange
+    public class Exchange
     {
         private List<Account> accounts = new();
         readonly IExchange exchange;

@@ -37,15 +37,15 @@ namespace TrueRealExchange.Orders
             UpdateLastPrice(price);
         }
 
-        public override void UpdateAllDeals(decimal price)
+        protected override void UpdateAllDeals(decimal price)
         {
             UpdateStatusOfDeals(EntryDeals, price);
             UpdateStatusOfDeals(TakeDeals, price);
             UpdateStatusOfDeals(StopDeals, price);
         }
 
-       
-        public override void Buy(Deal deal)
+
+        protected override void Buy(Deal deal)
         {
             var amount = deal.Amount;
             deal.Amount -= amount;
@@ -54,7 +54,7 @@ namespace TrueRealExchange.Orders
             Balance += basePrice - amount * deal.Price;
         }
 
-        public override void Sell(Deal deal)
+        protected override void Sell(Deal deal)
         {
             AveragePrice = (AveragePrice * Amount + deal.Amount * deal.Price) /
                                                         (Amount + deal.Amount);

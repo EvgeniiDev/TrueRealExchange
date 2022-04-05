@@ -7,7 +7,7 @@ using TrueRealExchange.Orders;
 namespace TrueRealExchange.Tests
 {
     [TestFixture]
-    public class MarketOrderTests
+    public class AccountTests
     {
         private FakePriceGenerator fakePrice;
         private Exchange exchange;

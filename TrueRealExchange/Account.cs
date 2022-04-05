@@ -27,6 +27,7 @@ namespace TrueRealExchange
         {
             var order = new MarketOrder(orderType, this, pair, prices, takes, stops);
             var guid = new Guid();
+
             Orders.Add(guid, order);
             return guid;
         }
@@ -34,12 +35,11 @@ namespace TrueRealExchange
         public Guid PostFuturesOrder(OrderType orderType, string pair, int leverage, List<Deal> prices,
                     List<Deal> takes = null, List<Deal> stops = null)
         {
-            var order = new BaseOrder();
-            if(orderType == OrderType.Long)
-                order = new FuturesOrderLong(this, pair, prices, leverage, takes, stops);
-            else
-                order = new FuturesOrderShort(this, pair, prices, leverage, takes, stops);
+            BaseOrder order = orderType == OrderType.Long ?
+                                new FuturesOrderLong(this, pair, prices, leverage, takes, stops)
+                                : new FuturesOrderShort(this, pair, prices, leverage, takes, stops);
             var guid = Guid.NewGuid();
+            
             Orders.Add(guid, order);
             return guid;
         }
@@ -56,24 +56,50 @@ namespace TrueRealExchange
             BalanceHistory.Add(Amount);
         }
 
-        public void SellCoins(Guid orderID)
+        public void SellCoins(Guid orderId)
         {
             throw new NotImplementedException();
         }
 
-        public void CancelOrder(Guid orderID)
+        public void ChangeStops(Guid orderId, List<Deal> stops)
         {
-            var order = Orders[orderID];
+            if (!Orders.ContainsKey(orderId))
+                throw new Exception("Unknown orderId");
+
+            Orders[orderId].StopDeals = stops;
+        }
+
+        public void ChangeEntryes(Guid orderId, List<Deal> entryes)
+        {
+            if (!Orders.ContainsKey(orderId))
+                throw new Exception("Unknown orderId");
+
+            Orders[orderId].EntryDeals = entryes;
+        }
+
+        public void ChangeTakes(Guid orderId, List<Deal> takes)
+        {
+            if (!Orders.ContainsKey(orderId))
+                throw new Exception("Unknown orderId");
+
+            Orders[orderId].TakeDeals = takes;
+        }
+
+        public void CancelOrder(Guid OrderId)
+        {
+            var order = Orders[OrderId];
             order.Status = Status.Close;
-            //order.deals.
+            order.CloseOrder();
+            //order.
             throw new NotImplementedException();
         }
 
         internal void DataReceiver(Dictionary<string, decimal> prices)
         {
+            var openedOrders = Orders.Values.Where(x => x.Status == Status.Open);
+
             foreach (var price in prices)
-                foreach (var order in Orders.Values.Where(x => x.Status == Status.Open)
-                                                    .Where(x => x.Pair == price.Key))
+                foreach (var order in openedOrders.Where(x => x.Pair == price.Key))
                     order.UpdateStatusOfOrder(price.Value);
         }
     }

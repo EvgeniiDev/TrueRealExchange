@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TrueRealExchange.Orders;
 
-namespace TrueRealExchange
+namespace TrueRealExchange.Tests
 {
     [TestFixture]
     public class FuturesOrderLongTest
@@ -101,7 +101,7 @@ namespace TrueRealExchange
             MovePrice(priceGoals, tickerName);
             Assert.AreEqual(Status.Open, account.Orders[order].Status);
             Assert.AreEqual(75m, account.Orders[order].Amount);
-            Assert.AreEqual(startBalance - 10 * 100 , account.Amount);
+            Assert.AreEqual(startBalance - 10 * 100, account.Amount);
         }
         [Test]
         public void BuySomeCoinsByFourEntryAndSellByThree()

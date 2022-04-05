@@ -4,21 +4,23 @@ using System.Linq;
 
 namespace TrueRealExchange.Orders
 {
-    public class BaseOrder
+    public abstract class BaseOrder
     {
-        protected Account owner;
         public decimal Amount;
         protected decimal AveragePrice;
-        public string Pair;
         public Status Status;
+        protected decimal lastPrice;
+        protected decimal Balance;
+        protected decimal StartBalance = 0;
+
         public List<Deal> TakeDeals = new();
         public List<Deal> StopDeals = new();
         public List<Deal> EntryDeals = new();
-        public decimal lastPrice;
+
+        public int Leverage { get; set; } = 1;
         protected decimal LiquidationPrice;
-        public decimal Balance;
-        public decimal StartBalance = 0;
-        public int Leverage = 1;
+        protected Account owner { get; }
+        public string Pair { get; }
 
         public virtual void UpdateStatusOfOrder(decimal price)
         {
@@ -27,6 +29,7 @@ namespace TrueRealExchange.Orders
                 UpdateLastPrice(price);
                 return;
             }
+
             UpdateAllDeals(price);
 
             if (Math.Abs(Amount) < 10e-4m && EntryDeals.All(x => x.Status == Status.Close))
@@ -45,7 +48,7 @@ namespace TrueRealExchange.Orders
             UpdateLastPrice(price);
         }
 
-        public virtual void UpdateAllDeals(decimal price)
+        protected virtual void UpdateAllDeals(decimal price)
         {
             UpdateStatusOfDeals(EntryDeals, price);
             UpdateStatusOfDeals(TakeDeals, price);
@@ -61,33 +64,33 @@ namespace TrueRealExchange.Orders
             Status = Status.Close;
         }
 
-        public virtual void UpdateStatusOfDeals(List<Deal> deals, decimal price)
+        protected virtual void UpdateStatusOfDeals(List<Deal> deals, decimal price)
         {
-            foreach (var deal in deals.Where(x => x.Status == Status.Open)
-                                        .Where(x => IsPriceCrossedLevel(x, price)))
+            foreach (var deal in deals.Where(x => x.Status == Status.Open
+                                                    && IsPriceCrossedLevel(x.Price, price)))
             {
                 switch (deal.OrderType)
                 {
                     case OrderType.Buy:
                         Buy(deal);
-                        if (deal.Amount == 0)
-                            deal.Status = Status.Close;
                         break;
+
                     case OrderType.Sell:
                         Sell(deal);
-                        if (deal.Amount == 0)
-                            deal.Status = Status.Close;
                         break;
+
                     default:
                         throw new NotImplementedException();
                 }
+                if (deal.Amount == 0)
+                    deal.Status = Status.Close;
             }
         }
         public BaseOrder(Account owner, string pair, List<Deal> entry,
                                 List<Deal> takes = null, List<Deal> stops = null)
         {
             if (!IsPositive(entry) || takes != null && !IsPositive(takes)
-                        || stops != null && !IsPositive(stops))
+                                   || stops != null && !IsPositive(stops))
                 throw new Exception("Incorrect input");
 
             this.owner = owner;
@@ -95,36 +98,28 @@ namespace TrueRealExchange.Orders
             Status = Status.Open;
         }
 
-        public BaseOrder()
+        protected bool IsPriceCrossedLevel(decimal level, decimal price)
         {
-        }
-
-        protected bool IsPriceCrossedLevel(Deal deal, decimal price)
-        {
-            return lastPrice >= price && deal.Price <= lastPrice && deal.Price >= price
-                   || lastPrice <= price && deal.Price >= lastPrice && deal.Price <= price;
+            return lastPrice >= price && level <= lastPrice && level >= price
+                   || lastPrice <= price && level >= lastPrice && level <= price;
         }
 
         protected static bool IsPositive(List<Deal> dictionary)
         {
-            if (dictionary == null) throw new ArgumentNullException(nameof(dictionary));
+            if (dictionary == null)
+                throw new ArgumentNullException(nameof(dictionary));
+
             return dictionary.All(x => x.Amount >= 0)
                    && dictionary.All(x => x.Price >= 0);
         }
 
-        public void UpdateLastPrice(decimal price)
+        protected void UpdateLastPrice(decimal price)
         {
             lastPrice = price;
         }
 
-        public virtual void Buy(Deal deal)
-        {
-            throw new NotImplementedException();
-        }
+        protected abstract void Buy(Deal deal);
 
-        public virtual void Sell(Deal deal)
-        {
-            throw new NotImplementedException();
-        }
+        protected abstract void Sell(Deal deal);
     }
 }
